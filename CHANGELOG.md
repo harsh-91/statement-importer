@@ -3,6 +3,13 @@
 
 Created by Harsh · Made in India 🇮🇳
 
+## 1.3.2 - 2026-09-21
+
+- Prevented the existing-database wizard from hanging on unreachable PostgreSQL servers.
+- Added a five-second timeout to every PostgreSQL connection.
+- Made the embedded desktop web server concurrent so one failed connection cannot block the application.
+- Added visible connection progress, port validation, and a layman-friendly failure message.
+
 ## 1.3.1 - 2026-09-21
 
 - Relicensed this and future releases under Apache License 2.0.

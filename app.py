@@ -89,6 +89,15 @@ def verify_csrf() -> None:
         abort(400, "Invalid form token. Reload the page and try again.")
 
 
+def friendly_database_error(exception: Exception) -> str:
+    detail = str(exception).strip().splitlines()[0] if str(exception).strip() else "No response from PostgreSQL"
+    return (
+        "Could not connect to that PostgreSQL database within 5 seconds. "
+        "Check the host, port, database name, username, password, server status, and firewall. "
+        f"Details: {detail}"
+    )
+
+
 app.jinja_env.globals["csrf_token"] = csrf_token
 
 
@@ -136,12 +145,16 @@ def setup_database():
         try:
             if not all(settings.values()):
                 raise ConfigError("Complete every connection field")
-            int(settings["POSTGRES_PORT"])
+            port = int(settings["POSTGRES_PORT"])
+            if not 1 <= port <= 65535:
+                raise ConfigError("PostgreSQL port must be between 1 and 65535")
             provision_database(settings)
             ensure_fingerprint_schema(settings)
             save_settings(settings)
             return redirect(url_for("setup_database", saved=1))
-        except (ConfigError, ValueError, psycopg.Error) as exception:
+        except psycopg.Error as exception:
+            error = friendly_database_error(exception)
+        except (ConfigError, ValueError) as exception:
             error = str(exception)
     return render_template("setup.html", fields=fields, error=error, success=success)
 

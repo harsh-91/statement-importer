@@ -19,7 +19,7 @@
     {% if success %}<div class="banner success-banner">Connection saved and tables are ready. <a href="{{ url_for('index') }}">Open the importer</a>.</div>{% endif %}
 
     <section class="panel">
-      <form method="post" class="setup-form">
+      <form method="post" class="setup-form" data-setup-form>
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="mode" value="automatic">
         <h2>Recommended</h2>
@@ -30,7 +30,7 @@
 
     <details class="panel">
       <summary>Advanced: connect an existing PostgreSQL server</summary>
-      <form method="post" class="setup-form">
+      <form method="post" class="setup-form" data-setup-form>
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="mode" value="manual">
         <div class="form-grid">
@@ -40,10 +40,11 @@
           <label><span>User</span><input name="user" value="{{ fields.POSTGRES_USER }}" required></label>
         </div>
         <label class="password-field"><span>Password</span><input type="password" name="password" autocomplete="new-password" required></label>
-        <p class="note">The password is protected with Windows Data Protection API and can only be decrypted by this Windows account.</p>
+        <p class="note">The password is protected with Windows Data Protection API and can only be decrypted by this Windows account. Failed connections stop after 5 seconds.</p>
         <button type="submit">Test, save, and prepare tables</button>
       </form>
     </details>
   </main>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>

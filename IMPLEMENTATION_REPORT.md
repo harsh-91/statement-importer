@@ -131,3 +131,21 @@ The project is suitable for personal use and controlled beta evaluation. It is n
 - Inno Setup 6.7.3 installer compile: passed and confirmed inclusion of `LICENSE.md` and `NOTICE`; product version verified as 1.3.1.
 - SHA-256: installer `D094B90E4577A020438B50462FFA1FF8CA7D3A90271A63B3A43C3E66CD50081A`; application `FB27BD0B20868290314ACADAA192AED820AF375EAF3B0850A9B8D85115C4CDD3`.
 - Authenticode inspection: `NotSigned`; public signing-status disclosure remains required.
+
+## 11. Existing-database failure recovery (v1.3.2)
+
+- Added a five-second libpq connection timeout to all PostgreSQL connections, including managed setup.
+- Changed the desktop WSGI server to threaded operation so a slow connection attempt cannot block unrelated local requests.
+- Validates manual ports against the TCP range before connecting.
+- Shows a visible bounded-progress state and returns a concise error with fields the user should verify.
+- Added regression tests for timeout propagation, actionable error formatting, and threaded server configuration.
+
+### v1.3.2 verification record
+
+- Python compile check: passed.
+- Unit suite: 23 of 23 tests passed, including the complete failed-manual-connection route.
+- Real unreachable-host check against the reserved TEST-NET address: returned `ConnectionTimeout` in 5.01 seconds.
+- PyInstaller Windows x64 application build: passed.
+- Inno Setup 6.7.3 installer compile: passed; product version verified as 1.3.2.
+- SHA-256: installer `8817714BFE8E0716A6697B23838B3A29E0994C6AD8B5147B9414ABA2E47BB27F`; application `B5FE82BD1DC48DD6DEF8AE24B432FD3084CF1C3EBFF838D126B9F9C9327B6DF8`.
+- Authenticode inspection: `NotSigned`; public signing-status disclosure remains required.

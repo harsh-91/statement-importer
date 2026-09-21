@@ -28,6 +28,17 @@
     document.getElementById('import-button').textContent = '> PROCESSING...';
   });
 
+  document.querySelectorAll('[data-setup-form]').forEach((setupForm) => {
+    setupForm.addEventListener('submit', () => {
+      const button = setupForm.querySelector('button[type="submit"]');
+      if (button) {
+        button.disabled = true;
+        button.dataset.originalText = button.textContent;
+        button.textContent = '> CONNECTING... MAX 5 SECONDS';
+      }
+    });
+  });
+
   const storedEffects = localStorage.getItem('retro-effects') !== 'off';
   document.documentElement.dataset.effects = storedEffects ? 'on' : 'off';
   if (effects) effects.textContent = storedEffects ? '[ FX: ON ]' : '[ FX: OFF ]';

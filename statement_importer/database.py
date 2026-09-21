@@ -58,6 +58,8 @@ TABLES = {
     },
 }
 
+DATABASE_CONNECT_TIMEOUT_SECONDS = 5
+
 
 def connect(settings: dict[str, str] | None = None):
     settings = settings or load_settings()
@@ -65,6 +67,8 @@ def connect(settings: dict[str, str] | None = None):
         host=settings["POSTGRES_HOST"], port=int(settings["POSTGRES_PORT"]),
         dbname=settings["POSTGRES_DB"], user=settings["POSTGRES_USER"],
         password=settings["POSTGRES_PASSWORD"],
+        connect_timeout=DATABASE_CONNECT_TIMEOUT_SECONDS,
+        application_name="statement-importer",
     )
 
 

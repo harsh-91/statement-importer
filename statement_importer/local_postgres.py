@@ -176,7 +176,8 @@ def _initialize(bin_dir: Path, port: int, owner_password: str) -> None:
 def _create_application_database(port: int, owner_password: str, app_password: str) -> None:
     with psycopg.connect(
         host="127.0.0.1", port=port, dbname="postgres", user=OWNER_USER,
-        password=owner_password, autocommit=True,
+        password=owner_password, autocommit=True, connect_timeout=5,
+        application_name="statement-importer-setup",
     ) as connection:
         with connection.cursor() as cursor:
             cursor.execute("SELECT 1 FROM pg_roles WHERE rolname=%s", (APP_USER,))

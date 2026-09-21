@@ -30,7 +30,7 @@ def acquire_single_instance() -> bool:
 
 class LocalServer:
     def __init__(self):
-        self.server = make_server("127.0.0.1", 8765, app)
+        self.server = make_server("127.0.0.1", 8765, app, threaded=True)
         self.port = self.server.server_port
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
 
