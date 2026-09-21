@@ -1,0 +1,92 @@
+<!-- Created by Harsh (@harsh-91) | Made in India -->
+<!doctype html>
+<html lang="en" data-effects="on">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Updates // Statement Importer</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="scanlines" aria-hidden="true"></div>
+  <main class="shell setup-shell">
+    <nav class="topbar">
+      <a class="brand" href="{{ url_for('index') }}">&lt; STATEMENT_IMPORTER</a>
+      <span class="system-light"><i></i> VERSION {{ app_version }}</span>
+    </nav>
+
+    <header class="hero compact-hero">
+      <p class="command">C:\BANK_DATA&gt; UPDATE.EXE</p>
+      <h1>SAFE<br><span>UPDATES.</span></h1>
+      <p class="intro">Checks only the official GitHub release. Nothing downloads or installs without your click.</p>
+    </header>
+
+    {% if error %}<p class="banner error-banner">[BLOCKED] {{ error }}</p>{% endif %}
+    {% if message %}<p class="banner success-banner">[OK] {{ message }}</p>{% endif %}
+
+    <section class="panel">
+      <div class="panel-title"><span>01</span> CHECK POLICY</div>
+      <div class="update-body">
+        <p><strong>CURRENT VERSION</strong> {{ app_version }}</p>
+        <p class="note">Automatic checking is optional. It sends a standard release request to GitHub when the app starts. It never uploads statement data, downloads an installer, or starts installation.</p>
+        <form method="post" class="inline-update-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="action" value="set_auto">
+          <input type="hidden" name="enabled" value="{{ 'false' if automatic else 'true' }}">
+          <button type="submit">{{ 'DISABLE' if automatic else 'ENABLE' }} AUTOMATIC CHECKS</button>
+          <span class="service-state {{ 'on' if automatic else 'off' }}">{{ 'ON' if automatic else 'OFF' }}</span>
+        </form>
+        <form method="post" class="inline-update-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="action" value="check">
+          <button type="submit">CHECK NOW</button>
+          <span class="note">Internet is needed only for this check and any chosen download.</span>
+        </form>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-title"><span>02</span> RELEASE STATUS</div>
+      <div class="update-body">
+        {% if update and update.update_available %}
+          <p class="service-state on">VERSION {{ update.latest_version }} AVAILABLE</p>
+          <p>{{ update.release_name }}</p>
+          {% if update.published_at %}<p class="note">PUBLISHED {{ update.published_at }}</p>{% endif %}
+          {% if update.notes %}<pre class="release-notes">{{ update.notes }}</pre>{% endif %}
+          <form method="post" class="inline-update-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="action" value="download">
+            <button type="submit">DOWNLOAD + VERIFY SIGNATURE</button>
+          </form>
+        {% elif update %}
+          <p class="service-state on">YOU ARE UP TO DATE</p>
+          <p class="note">Latest official release: {{ update.latest_version }}</p>
+        {% else %}
+          <p class="service-state off">NOT CHECKED</p>
+          <p class="note">Use CHECK NOW when you have internet, or keep working offline.</p>
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-title"><span>03</span> VERIFIED INSTALLER</div>
+      <div class="update-body">
+        {% if ready %}
+          <p class="service-state on">SIGNATURE VALID</p>
+          <p>VERSION {{ ready.version }} // SHA-256 {{ ready.sha256 }}</p>
+          <p class="note">SIGNED BY {{ ready.signature.subject }}<br>THUMBPRINT {{ ready.signature.thumbprint }}</p>
+          <form method="post" class="inline-update-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="action" value="install">
+            <button type="submit">OPEN VERIFIED INSTALLER</button>
+          </form>
+        {% else %}
+          <p class="service-state off">NO VERIFIED INSTALLER READY</p>
+          <p class="note">Installation is blocked unless the exact published SHA-256 matches and Windows confirms a valid SignPath Foundation Authenticode signature.</p>
+        {% endif %}
+      </div>
+    </section>
+  </main>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

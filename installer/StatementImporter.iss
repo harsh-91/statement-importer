@@ -1,6 +1,6 @@
 ; Created by Harsh (@harsh-91) | Made in India
 #define MyAppName "Statement Importer"
-#define MyAppVersion "1.2.0"
+#define MyAppVersion "1.3.0"
 #define MyAppPublisher "Harsh"
 #define MyAppExeName "StatementImporter.exe"
 
@@ -24,7 +24,7 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0.17763
 OutputDir=..\dist
-OutputBaseFilename=StatementImporter-1.2.0-Setup-x64
+OutputBaseFilename=StatementImporter-1.3.0-Setup-x64
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern

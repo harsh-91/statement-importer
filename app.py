@@ -16,7 +16,7 @@ from flask import Flask, Response, abort, jsonify, redirect, render_template, re
 from statement_importer.config import ConfigError, save_settings, saved_connection_fields
 from statement_importer.access import (
     create_api_key, list_api_keys, list_imports, revoke_api_key, search_transactions,
-    service_status, set_setting,
+    get_setting, service_status, set_setting,
 )
 from statement_importer.api import api
 from statement_importer.database import (
@@ -36,6 +36,11 @@ from statement_importer.mapping import cleanup_pending, load_pending, mapped_row
 from statement_importer.security import safe_csv_row
 from statement_importer.maintenance import create_backup, create_reporting_user, list_backups
 from statement_importer.local_postgres import LocalPostgresError, managed_admin_settings, provision_managed_postgres
+from statement_importer.updater import (
+    UpdateError, cached_update, check_latest_release, download_verified_update,
+    launch_verified_update, start_background_check, verified_update,
+)
+from statement_importer.version import __version__
 
 
 def resource_path(name: str) -> str:
@@ -100,7 +105,10 @@ def index():
     counts = current_counts()
     if counts is None:
         return redirect(url_for("setup_database"))
-    return render_template("index.html", results=None, counts=counts, stats=dashboard_stats())
+    return render_template(
+        "index.html", results=None, counts=counts, stats=dashboard_stats(),
+        update=cached_update(), app_version=__version__,
+    )
 
 
 @app.route("/setup", methods=["GET", "POST"])
@@ -195,7 +203,52 @@ def upload_statements():
     counts = current_counts()
     if counts is None:
         return redirect(url_for("setup_database"))
-    return render_template("index.html", results=results, counts=counts, stats=dashboard_stats(), batch_id=batch_id)
+    return render_template(
+        "index.html", results=results, counts=counts, stats=dashboard_stats(), batch_id=batch_id,
+        update=cached_update(), app_version=__version__,
+    )
+
+
+@app.route("/updates", methods=["GET", "POST"])
+def updates():
+    result = None
+    error = None
+    message = None
+    try:
+        automatic = bool(get_setting("automatic_update_checks", False))
+        if request.method == "POST":
+            verify_csrf()
+            action = request.form.get("action")
+            if action == "check":
+                result = check_latest_release()
+                message = "Update check completed."
+            elif action == "set_auto":
+                automatic = request.form.get("enabled") == "true"
+                set_setting("automatic_update_checks", automatic)
+                message = "Automatic checks enabled." if automatic else "Automatic checks disabled."
+            elif action == "download":
+                ready = download_verified_update()
+                message = f"Version {ready['version']} downloaded and verified."
+            elif action == "install":
+                launch_verified_update()
+                message = "The verified installer is open. Follow its upgrade wizard."
+            else:
+                abort(400, "Unknown update action")
+        if result is None:
+            result = cached_update()
+        ready = verified_update()
+    except (UpdateError, OSError, psycopg.Error, ConfigError) as exception:
+        error = str(exception)
+        automatic = False
+        try:
+            automatic = bool(get_setting("automatic_update_checks", False))
+        except (ConfigError, psycopg.Error):
+            pass
+        ready = verified_update()
+    return render_template(
+        "updates.html", app_version=__version__, update=result, ready=ready,
+        automatic=automatic, message=message, error=error,
+    )
 
 
 @app.route("/map/<token>", methods=["GET", "POST"])
@@ -325,6 +378,10 @@ def main():
     if args.migrate_only:
         print(table_counts())
         return
+    try:
+        start_background_check(bool(get_setting("automatic_update_checks", False)))
+    except (ConfigError, psycopg.Error):
+        pass
     if args.open_browser:
         threading.Timer(1.0, lambda: webbrowser.open(f"http://127.0.0.1:{args.port}")).start()
     app.run(host="127.0.0.1", port=args.port, debug=False)

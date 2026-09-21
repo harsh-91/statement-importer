@@ -24,6 +24,7 @@ from .access import (
     verify_api_key,
 )
 from .security import safe_csv_row
+from .version import __version__
 
 
 api = Blueprint("api", __name__)
@@ -78,7 +79,7 @@ def require_service(service: str):
 @api.get("/api/v1/health")
 @require_service("api")
 def api_health():
-    return jsonify({"status": "ok", "service": "Statement Importer API", "version": "1.0"})
+    return jsonify({"status": "ok", "service": "Statement Importer API", "version": __version__})
 
 
 @api.get("/api/v1/banks")
@@ -168,7 +169,7 @@ def mcp_endpoint():
     if method == "initialize":
         result = {
             "protocolVersion": "2025-06-18", "capabilities": {"tools": {"listChanged": False}},
-            "serverInfo": {"name": "statement-importer", "version": "1.1"},
+            "serverInfo": {"name": "statement-importer", "version": __version__},
         }
     elif method == "notifications/initialized":
         return "", 202
@@ -200,7 +201,7 @@ def mcp_endpoint():
 @api.get("/api/v1/openapi.json")
 def openapi_document():
     return jsonify({
-        "openapi": "3.1.0", "info": {"title": "Statement Importer API", "version": "1.1.1"},
+        "openapi": "3.1.0", "info": {"title": "Statement Importer API", "version": __version__},
         "servers": [{"url": "/"}],
         "components": {"securitySchemes": {"ApiKey": {"type": "apiKey", "in": "header", "name": "X-API-Key"}}},
         "paths": {path: {"get": {"security": [{"ApiKey": []}], "responses": {"200": {"description": "Success"}}}} for path in [

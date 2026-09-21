@@ -6,12 +6,15 @@ import ctypes
 import webbrowser
 
 import webview
+import psycopg
 from werkzeug.serving import make_server
 
 from app import app
 from statement_importer.config import ConfigError
+from statement_importer.access import get_setting
 from statement_importer.database import ensure_schema
 from statement_importer.local_postgres import LocalPostgresError, start_managed_postgres_if_present
+from statement_importer.updater import start_background_check
 
 
 _mutex_handle = None
@@ -46,10 +49,17 @@ def main():
         start_managed_postgres_if_present()
     except LocalPostgresError:
         pass
+    database_ready = False
     try:
         ensure_schema()
-    except ConfigError:
+        database_ready = True
+    except (ConfigError, psycopg.Error):
         pass
+    if database_ready:
+        try:
+            start_background_check(bool(get_setting("automatic_update_checks", False)))
+        except (ConfigError, psycopg.Error):
+            pass
     server = LocalServer()
     server.start()
     try:

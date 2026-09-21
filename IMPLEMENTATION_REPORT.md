@@ -92,3 +92,24 @@ The project is suitable for personal use and controlled beta evaluation. It is n
 - SHA-256 generated for the setup package and embedded application executable.
 - Authenticode status remains `NotSigned` until the submitted SignPath Foundation application is approved.
 - A full temporary-cluster smoke run was attempted in the Codex sandbox. PostgreSQL initialization completed, but `pg_ctl` rejected the sandbox's restricted Windows token before server start (`error code 87`). This is an environment boundary, not recorded as a pass; clean-machine non-elevated verification remains required before broad distribution.
+
+## 9. Safe in-app updates (v1.3.0)
+
+- Added a dedicated update screen with a manual check and an opt-in launch-time check.
+- Uses only the official `harsh-91/statement-importer` GitHub release endpoint and allowlisted GitHub HTTPS download hosts.
+- Requires the exact versioned x64 installer and `SHA256SUMS.txt` release assets.
+- Enforces a 250 MB download limit, exact byte count, published SHA-256, and the GitHub asset digest when available.
+- Uses Windows Authenticode verification and requires a valid SignPath Foundation signer before a download is promoted to installable state.
+- Re-verifies both file hash and Authenticode immediately before opening the installer.
+- Never downloads or installs silently. Background checks swallow offline failures and do not affect local statement processing.
+
+### v1.3.0 verification record
+
+- Python compile check: passed.
+- Unit suite: 19 of 19 tests passed, including strict version and URL handling, exact checksum selection, verified-download success, and unsigned-download rejection.
+- Flask update-page render check without network access: passed.
+- Live read-only GitHub release API check: passed; v1.2.0 was correctly identified as older than the running v1.3.0 code.
+- PyInstaller Windows x64 application build: passed.
+- Inno Setup 6.7.3 installer compile: passed; product version verified as 1.3.0.
+- SHA-256: installer `589FAE2985D8A4C65B7C038F47DD26C7130A0EAF21A9BAD7DC8654050B90E5C2`; application `CA8DC6E47912ABB9403415185AAC1F1AD1F35622F63A2DFE4C8D557B7582B39B`.
+- Authenticode inspection: both artifacts remain `NotSigned`; this is disclosed, and the updater intentionally refuses them until SignPath Foundation signing is available.

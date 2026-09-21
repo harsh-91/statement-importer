@@ -3,6 +3,19 @@
 
 Created by Harsh · Made in India 🇮🇳
 
+## 1.3.0 - 2026-09-21
+
+- Added a privacy-conscious update center with manual and optional launch-time checks.
+- Restricted release metadata and downloads to official GitHub HTTPS hosts.
+- Added exact asset, size, SHA-256 manifest, GitHub digest, and SignPath Foundation Authenticode validation.
+- Kept downloads and installation explicitly user initiated; offline behavior is unchanged.
+
+## 1.2.0 - 2026-09-21
+
+- Added one-click managed local PostgreSQL provisioning and automatic restart.
+- Protected generated database credentials using Windows DPAPI.
+- Added password-free read-only DBeaver credential creation for managed databases.
+
 ## 1.1.1 - 2026-09-21
 
 - Released the project as open-source software under the MIT License.

@@ -1,5 +1,5 @@
 <!-- Created by Harsh (@harsh-91) | Made in India -->
-# Statement Importer 1.2.0
+# Statement Importer 1.3.0
 
 Created by **Harsh** ([@harsh-91](https://github.com/harsh-91)) · Made in India 🇮🇳
 
@@ -18,6 +18,11 @@ Created by **Harsh** ([@harsh-91](https://github.com/harsh-91)) · Made in India
 - Generated owner and least-privilege app credentials protected with Windows DPAPI.
 - Automatic managed-database startup and password-free creation of read-only DBeaver credentials.
 - Existing PostgreSQL connections remain available in the Advanced setup section.
+- New in-app update center with manual checks and optional launch-time checks.
+- Update discovery is restricted to the official GitHub release and never uploads financial data.
+- Downloads and installation require explicit clicks; no silent or forced updates.
+- Installers are blocked unless the release checksum matches and Windows validates a SignPath Foundation Authenticode signature.
+- Offline importing, reconciliation, PostgreSQL, REST, and MCP operation are unchanged.
 
 ## Requirements
 
@@ -29,11 +34,11 @@ The installer can offer optional winget prerequisite downloads. Once prerequisit
 
 ## Install
 
-1. Download `StatementImporter-1.2.0-Setup-x64.exe` and `SHA256SUMS.txt`.
+1. Download `StatementImporter-1.3.0-Setup-x64.exe` and `SHA256SUMS.txt`.
 2. Verify the installer SHA-256 checksum.
 3. Run the installer and review its prerequisite screen.
 4. Launch Statement Importer and click **Create my local database automatically**.
 
 ## Distribution notice
 
-Statement Importer is open-source software distributed under the MIT License. The installer is not Authenticode-signed, so Windows SmartScreen may show an unknown-publisher warning. Verify the published SHA-256 checksum and review the [code signing policy](https://github.com/harsh-91/statement-importer/blob/main/CODE_SIGNING.md). This release is not represented as regulated financial software and should receive independent review before regulated or high-risk use.
+Statement Importer is open-source software distributed under the MIT License. Check the release page for the signing status of this installer, verify its published SHA-256, and review the [code signing policy](https://github.com/harsh-91/statement-importer/blob/main/CODE_SIGNING.md). The in-app updater refuses unsigned installers. This release is not represented as regulated financial software and should receive independent review before regulated or high-risk use.

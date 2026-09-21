@@ -2,7 +2,7 @@ Created by Harsh (@harsh-91) | Made in India
 
 STATEMENT IMPORTER - WINDOWS QUICK START
 
-RECOMMENDED INSTALLER: StatementImporter-1.2.0-Setup-x64.exe
+RECOMMENDED INSTALLER: StatementImporter-1.3.0-Setup-x64.exe
 
 1. Use 64-bit Windows 10 build 17763+ or Windows 11. The setup checks PostgreSQL and WebView2.
 2. Double-click StatementImporter.exe.
@@ -10,6 +10,7 @@ RECOMMENDED INSTALLER: StatementImporter-1.2.0-Setup-x64.exe
 4. Select one or more bank statement files and click Reconcile and import.
 5. Refresh your database or DBeaver connection to see newly inserted rows.
 6. Open Safety to create a verified backup and an optional read-only reporting login.
+7. Open Updates to check manually or opt in to launch-time checks. Downloads and installs always require your click.
 
 Supported statement structures:
 - State Bank of India (SBI)
@@ -20,5 +21,6 @@ The app creates the required tables automatically. Statement passwords are never
 The PostgreSQL password is protected for the current Windows account using Windows DPAPI.
 Pending unmapped statements are also DPAPI-protected and deleted after 24 hours.
 
-Windows may display an unknown-publisher warning because this community build is not Authenticode-signed.
+The in-app updater rejects any installer without a matching SHA-256 and a valid SignPath Foundation signature.
+Check the release page for the signing status of a manually downloaded installer.
 Only distribute software and financial tools in accordance with applicable privacy and banking rules.

@@ -17,6 +17,7 @@
         <a href="{{ url_for('transaction_browser') }}">[ DATA ]</a>
         <a href="{{ url_for('import_history') }}">[ HISTORY ]</a>
         <a href="{{ url_for('access_settings') }}">[ API / MCP ]</a>
+        <a href="{{ url_for('updates') }}">[ UPDATES ]</a>
         <a href="{{ url_for('maintenance') }}">[ SAFETY ]</a>
         <a href="{{ url_for('setup_database') }}">[ DATABASE ]</a>
         <button type="button" class="text-button" id="effects-toggle">[ FX: ON ]</button>
@@ -28,6 +29,13 @@
       <h1>IMPORT STATEMENTS.<br><span>SKIP DUPLICATES.</span></h1>
       <p class="intro">Local reconciliation terminal for SBI, ICICI Bank, and IndusInd Bank. Files and passwords stay on this machine.</p>
     </header>
+
+    {% if update %}
+    <aside class="update-banner">
+      <span>[UPDATE READY]</span> VERSION {{ update.latest_version }} IS AVAILABLE.
+      <a href="{{ url_for('updates') }}">REVIEW + VERIFY</a>
+    </aside>
+    {% endif %}
 
     <section class="dashboard" aria-label="Database summary">
       <article><span>TRANSACTIONS</span><strong>{{ '{:,}'.format(stats.transactions) }}</strong></article>

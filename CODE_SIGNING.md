@@ -3,7 +3,7 @@
 
 ## Current status
 
-Statement Importer `v1.1.1` is currently unsigned. It must not be represented as signed until a trusted Authenticode signature has been applied and independently verified.
+Statement Importer releases must not be represented as signed until a trusted Authenticode signature has been applied and independently verified. Check each GitHub release for its actual signing status.
 
 The project is preparing an application for **free code signing provided by SignPath.io, certificate by SignPath Foundation**. Signing can begin only after the open-source project is reviewed and approved by SignPath Foundation.
 
@@ -19,6 +19,8 @@ The project is preparing an application for **free code signing provided by Sign
 - Every signed release must publish SHA-256 checksums.
 - Authenticode signatures and timestamps must be verified before upload.
 - Unsigned historical releases remain clearly identified as unsigned.
+- The in-app updater must reject any installer that Windows does not validate as signed by SignPath Foundation.
+- Update installation is always initiated by the user; automatic checks never imply automatic download or installation.
 
 ## Privacy policy
 
