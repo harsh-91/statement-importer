@@ -1,6 +1,6 @@
 ; Created by Harsh (@harsh-91) | Made in India
 #define MyAppName "Statement Importer"
-#define MyAppVersion "1.1.0"
+#define MyAppVersion "1.1.1"
 #define MyAppPublisher "Harsh"
 #define MyAppExeName "StatementImporter.exe"
 
@@ -24,7 +24,7 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0.17763
 OutputDir=..\dist
-OutputBaseFilename=StatementImporter-1.1.0-Setup-x64
+OutputBaseFilename=StatementImporter-1.1.1-Setup-x64
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
@@ -49,6 +49,7 @@ Name: "webview"; Description: "Download Microsoft Edge WebView2 Runtime with win
 Source: "..\dist\StatementImporter.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\QUICK_START.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\README.md"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\LICENSE.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\IMPLEMENTATION_REPORT.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\requirements-lock.txt"; DestDir: "{app}"; DestName: "DEPENDENCY_MANIFEST.txt"; Flags: ignoreversion
 

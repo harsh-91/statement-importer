@@ -1,5 +1,5 @@
 <!-- Created by Harsh (@harsh-91) | Made in India -->
-# Statement Importer 1.1.0
+# Statement Importer 1.1.1
 
 Created by **Harsh** ([@harsh-91](https://github.com/harsh-91)) · Made in India 🇮🇳
 
@@ -25,7 +25,7 @@ The installer can offer optional winget prerequisite downloads. Once prerequisit
 
 ## Install
 
-1. Download `StatementImporter-1.1.0-Setup-x64.exe` and `SHA256SUMS.txt`.
+1. Download `StatementImporter-1.1.1-Setup-x64.exe` and `SHA256SUMS.txt`.
 2. Verify the installer SHA-256 checksum.
 3. Run the installer and review its prerequisite screen.
 4. Launch Statement Importer and configure the local PostgreSQL connection.

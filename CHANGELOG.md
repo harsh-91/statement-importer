@@ -3,9 +3,10 @@
 
 Created by Harsh · Made in India 🇮🇳
 
-## Unreleased
+## 1.1.1 - 2026-09-21
 
 - Released the project as open-source software under the MIT License.
+- Added the MIT license to installed and portable distribution packages.
 
 ## 1.1.0 - 2026-09-21
 

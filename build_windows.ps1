@@ -13,6 +13,7 @@ if ($LASTEXITCODE -ne 0) { throw 'StatementImporter.exe build failed. Close any 
 New-Item -ItemType Directory -Path (Join-Path $projectRoot 'setup-payload') -Force | Out-Null
 Copy-Item -LiteralPath (Join-Path $projectRoot 'dist\StatementImporter.exe') -Destination (Join-Path $projectRoot 'setup-payload\StatementImporter.exe') -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'QUICK_START.txt') -Destination (Join-Path $projectRoot 'setup-payload\QUICK_START.txt') -Force
+Copy-Item -LiteralPath (Join-Path $projectRoot 'LICENSE.md') -Destination (Join-Path $projectRoot 'setup-payload\LICENSE.md') -Force
 & $python -m PyInstaller --noconfirm --clean --onefile --windowed --name StatementImporterSetup `
     --add-data "setup-payload;payload" setup_launcher.py
 if ($LASTEXITCODE -ne 0) { throw 'StatementImporterSetup.exe build failed. Close any running copy and retry.' }
@@ -32,7 +33,7 @@ $iscc = @($localIscc, $registeredIscc, $installedIscc7, $installedIscc) | Where-
 if ($iscc) {
     & $iscc (Join-Path $projectRoot 'installer\StatementImporter.iss')
     if ($LASTEXITCODE -ne 0) { throw 'Conventional installer build failed.' }
-    Write-Host "Built: $projectRoot\dist\StatementImporter-1.1.0-Setup-x64.exe"
+    Write-Host "Built: $projectRoot\dist\StatementImporter-1.1.1-Setup-x64.exe"
 } else {
     Write-Warning 'Inno Setup compiler not found; conventional installer was not built.'
 }

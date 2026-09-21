@@ -200,7 +200,7 @@ def mcp_endpoint():
 @api.get("/api/v1/openapi.json")
 def openapi_document():
     return jsonify({
-        "openapi": "3.1.0", "info": {"title": "Statement Importer API", "version": "1.1.0"},
+        "openapi": "3.1.0", "info": {"title": "Statement Importer API", "version": "1.1.1"},
         "servers": [{"url": "/"}],
         "components": {"securitySchemes": {"ApiKey": {"type": "apiKey", "in": "header", "name": "X-API-Key"}}},
         "paths": {path: {"get": {"security": [{"ApiKey": []}], "responses": {"200": {"description": "Success"}}}} for path in [

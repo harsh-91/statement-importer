@@ -70,7 +70,7 @@ def register_uninstaller() -> None:
     key_path = r"Software\Microsoft\Windows\CurrentVersion\Uninstall\StatementImporter"
     with winreg.CreateKey(winreg.HKEY_CURRENT_USER, key_path) as key:
         winreg.SetValueEx(key, "DisplayName", 0, winreg.REG_SZ, APP_NAME)
-        winreg.SetValueEx(key, "DisplayVersion", 0, winreg.REG_SZ, "1.1.0")
+        winreg.SetValueEx(key, "DisplayVersion", 0, winreg.REG_SZ, "1.1.1")
         winreg.SetValueEx(key, "Publisher", 0, winreg.REG_SZ, "Harsh - Made in India")
         winreg.SetValueEx(key, "DisplayIcon", 0, winreg.REG_SZ, str(APP_EXE))
         winreg.SetValueEx(key, "UninstallString", 0, winreg.REG_SZ, f'"{UNINSTALL_EXE}" --uninstall')
@@ -188,9 +188,10 @@ class SetupWindow:
         INSTALL_DIR.mkdir(parents=True, exist_ok=True)
         shutil.copy2(payload, APP_EXE)
         shutil.copy2(sys.executable, UNINSTALL_EXE)
-        guide = resource("payload/QUICK_START.txt")
-        if guide.exists():
-            shutil.copy2(guide, INSTALL_DIR / "QUICK_START.txt")
+        for document in ("QUICK_START.txt", "LICENSE.md"):
+            source = resource(f"payload/{document}")
+            if source.exists():
+                shutil.copy2(source, INSTALL_DIR / document)
         create_shortcut(Path.home() / "Desktop" / "Statement Importer.lnk", APP_EXE)
         create_shortcut(Path(os.environ.get("APPDATA", Path.home())) / "Microsoft/Windows/Start Menu/Programs/Statement Importer.lnk", APP_EXE)
         register_uninstaller()
