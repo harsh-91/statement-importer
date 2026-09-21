@@ -11,6 +11,7 @@ from werkzeug.serving import make_server
 from app import app
 from statement_importer.config import ConfigError
 from statement_importer.database import ensure_schema
+from statement_importer.local_postgres import LocalPostgresError, start_managed_postgres_if_present
 
 
 _mutex_handle = None
@@ -41,6 +42,10 @@ def main():
     if not acquire_single_instance():
         webbrowser.open("http://127.0.0.1:8765")
         return
+    try:
+        start_managed_postgres_if_present()
+    except LocalPostgresError:
+        pass
     try:
         ensure_schema()
     except ConfigError:

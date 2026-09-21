@@ -1,6 +1,6 @@
 ; Created by Harsh (@harsh-91) | Made in India
 #define MyAppName "Statement Importer"
-#define MyAppVersion "1.1.1"
+#define MyAppVersion "1.2.0"
 #define MyAppPublisher "Harsh"
 #define MyAppExeName "StatementImporter.exe"
 
@@ -24,7 +24,7 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0.17763
 OutputDir=..\dist
-OutputBaseFilename=StatementImporter-1.1.1-Setup-x64
+OutputBaseFilename=StatementImporter-1.2.0-Setup-x64
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
@@ -42,8 +42,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "Create a &desktop shortcut"; GroupDescription: "Shortcuts:"; Flags: unchecked
-Name: "postgres"; Description: "Download and run PostgreSQL 17 installer with winget"; GroupDescription: "Optional prerequisites (internet required):"; Flags: unchecked; Check: ShouldOfferPostgreSQL
-Name: "webview"; Description: "Download Microsoft Edge WebView2 Runtime with winget"; GroupDescription: "Optional prerequisites (internet required):"; Flags: unchecked; Check: ShouldOfferWebView2
+Name: "postgres"; Description: "Download and run PostgreSQL 17 installer with winget"; GroupDescription: "Missing prerequisites (internet required):"; Check: ShouldOfferPostgreSQL
+Name: "webview"; Description: "Download Microsoft Edge WebView2 Runtime with winget"; GroupDescription: "Missing prerequisites (internet required):"; Check: ShouldOfferWebView2
 
 [Files]
 Source: "..\dist\StatementImporter.exe"; DestDir: "{app}"; Flags: ignoreversion
@@ -59,7 +59,7 @@ Name: "{group}\Quick Start"; Filename: "{app}\QUICK_START.txt"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Tasks: desktopicon
 
 [Run]
-Filename: "{code:GetWingetPath}"; Parameters: "install --exact --id PostgreSQL.PostgreSQL.17 --source winget --interactive --accept-package-agreements --accept-source-agreements"; Description: "Install PostgreSQL 17"; Tasks: postgres; Flags: waituntilterminated; Check: WingetAvailable
+Filename: "{code:GetWingetPath}"; Parameters: "install --exact --id PostgreSQL.PostgreSQL.17 --source winget --silent --accept-package-agreements --accept-source-agreements"; Description: "Install PostgreSQL 17"; Tasks: postgres; Flags: waituntilterminated; Check: WingetAvailable
 Filename: "{code:GetWingetPath}"; Parameters: "install --exact --id Microsoft.EdgeWebView2Runtime --source winget --silent --accept-package-agreements --accept-source-agreements"; Description: "Install Microsoft Edge WebView2 Runtime"; Tasks: webview; Flags: waituntilterminated; Check: WingetAvailable
 Filename: "{app}\{#MyAppExeName}"; Description: "Launch {#MyAppName}"; Flags: nowait postinstall skipifsilent
 

@@ -1,5 +1,5 @@
 <!-- Created by Harsh (@harsh-91) | Made in India -->
-# Statement Importer 1.1.1
+# Statement Importer 1.2.0
 
 Created by **Harsh** ([@harsh-91](https://github.com/harsh-91)) · Made in India 🇮🇳
 
@@ -14,6 +14,10 @@ Created by **Harsh** ([@harsh-91](https://github.com/harsh-91)) · Made in India
 - Verified database backups and read-only reporting-user creation.
 - Conventional x64 Windows setup with PostgreSQL and WebView2 checks.
 - Retro 1980s 8-bit interface.
+- One-click first-run setup of an isolated, localhost-only PostgreSQL cluster.
+- Generated owner and least-privilege app credentials protected with Windows DPAPI.
+- Automatic managed-database startup and password-free creation of read-only DBeaver credentials.
+- Existing PostgreSQL connections remain available in the Advanced setup section.
 
 ## Requirements
 
@@ -25,10 +29,10 @@ The installer can offer optional winget prerequisite downloads. Once prerequisit
 
 ## Install
 
-1. Download `StatementImporter-1.1.1-Setup-x64.exe` and `SHA256SUMS.txt`.
+1. Download `StatementImporter-1.2.0-Setup-x64.exe` and `SHA256SUMS.txt`.
 2. Verify the installer SHA-256 checksum.
 3. Run the installer and review its prerequisite screen.
-4. Launch Statement Importer and configure the local PostgreSQL connection.
+4. Launch Statement Importer and click **Create my local database automatically**.
 
 ## Distribution notice
 

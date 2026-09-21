@@ -7,13 +7,15 @@ Offline-first Windows desktop application for reconciling bank statements into P
 
 ## Install
 
-Download `StatementImporter-1.1.1-Setup-x64.exe` from the repository's [latest release](https://github.com/harsh-91/statement-importer/releases/latest). The standard Windows wizard provides per-user installation, upgrade handling, shortcut choices, Programs & Features registration, and a data-preserving uninstaller.
+Download `StatementImporter-1.2.0-Setup-x64.exe` from the repository's [latest release](https://github.com/harsh-91/statement-importer/releases/latest). The standard Windows wizard provides per-user installation, upgrade handling, shortcut choices, Programs & Features registration, and a data-preserving uninstaller.
 
 This build targets supported 64-bit Intel/AMD editions of Windows 10 (build 17763+) and Windows 11. The setup checks the platform, PostgreSQL, and Microsoft Edge WebView2; PostgreSQL and WebView2 can be installed through winget or supplied manually.
 
 The setup detects PostgreSQL and Microsoft Edge WebView2. If either is unavailable, select its optional winget task when internet is available or install it independently.
 
 The application itself, statement processing, PostgreSQL access, REST API, and MCP endpoint require no internet connection.
+
+On first launch, choose **Create my local database automatically**. The app creates an isolated local PostgreSQL cluster, database, and least-privilege application login. Generated credentials are protected for the current Windows account with DPAPI. Manual server fields remain available under **Advanced**.
 
 ## Supported statements
 
@@ -79,7 +81,7 @@ Build the app and setup executable:
 .\build_windows.ps1
 ```
 
-When Inno Setup 7 or the project-local compiler is available, the build also produces the conventional `StatementImporter-1.1.1-Setup-x64.exe` installer from `installer\StatementImporter.iss`.
+When Inno Setup 7 or the project-local compiler is available, the build also produces the conventional `StatementImporter-1.2.0-Setup-x64.exe` installer from `installer\StatementImporter.iss`.
 
 See `IMPLEMENTATION_REPORT.md` for the full incremental implementation and test record.
 

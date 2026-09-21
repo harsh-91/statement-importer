@@ -70,7 +70,7 @@ def register_uninstaller() -> None:
     key_path = r"Software\Microsoft\Windows\CurrentVersion\Uninstall\StatementImporter"
     with winreg.CreateKey(winreg.HKEY_CURRENT_USER, key_path) as key:
         winreg.SetValueEx(key, "DisplayName", 0, winreg.REG_SZ, APP_NAME)
-        winreg.SetValueEx(key, "DisplayVersion", 0, winreg.REG_SZ, "1.1.1")
+        winreg.SetValueEx(key, "DisplayVersion", 0, winreg.REG_SZ, "1.2.0")
         winreg.SetValueEx(key, "Publisher", 0, winreg.REG_SZ, "Harsh - Made in India")
         winreg.SetValueEx(key, "DisplayIcon", 0, winreg.REG_SZ, str(APP_EXE))
         winreg.SetValueEx(key, "UninstallString", 0, winreg.REG_SZ, f'"{UNINSTALL_EXE}" --uninstall')
@@ -196,7 +196,7 @@ class SetupWindow:
         create_shortcut(Path(os.environ.get("APPDATA", Path.home())) / "Microsoft/Windows/Start Menu/Programs/Statement Importer.lnk", APP_EXE)
         register_uninstaller()
         subprocess.Popen([str(APP_EXE)], cwd=INSTALL_DIR)
-        messagebox.showinfo(APP_NAME, "Installation complete. Configure PostgreSQL in the application window.")
+        messagebox.showinfo(APP_NAME, "Installation complete. Choose automatic local setup when the application opens.")
         self.root.destroy()
 
     def run(self):

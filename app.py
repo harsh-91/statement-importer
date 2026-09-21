@@ -35,6 +35,7 @@ from statement_importer.parsers import PasswordRequired, StatementError, parse_s
 from statement_importer.mapping import cleanup_pending, load_pending, mapped_rows, preview_pending, remove_pending, save_pending
 from statement_importer.security import safe_csv_row
 from statement_importer.maintenance import create_backup, create_reporting_user, list_backups
+from statement_importer.local_postgres import LocalPostgresError, managed_admin_settings, provision_managed_postgres
 
 
 def resource_path(name: str) -> str:
@@ -109,6 +110,13 @@ def setup_database():
     success = request.args.get("saved") == "1"
     if request.method == "POST":
         verify_csrf()
+        if request.form.get("mode") == "automatic":
+            try:
+                provision_managed_postgres()
+                return redirect(url_for("setup_database", saved=1))
+            except (LocalPostgresError, ConfigError, OSError, psycopg.Error) as exception:
+                error = str(exception)
+                return render_template("setup.html", fields=fields, error=error, success=success)
         settings = {
             "POSTGRES_HOST": request.form.get("host", "").strip(),
             "POSTGRES_PORT": request.form.get("port", "").strip(),
@@ -261,7 +269,8 @@ def maintenance():
         except (ConfigError, psycopg.Error, OSError, RuntimeError) as exception:
             error = str(exception)
     return render_template("maintenance.html", backups=list_backups(), error=error,
-                           backup_created=backup_created, reporting=reporting)
+                           backup_created=backup_created, reporting=reporting,
+                           managed_database=managed_admin_settings() is not None)
 
 
 @app.get("/transactions")

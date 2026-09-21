@@ -68,13 +68,16 @@ def list_backups(limit: int = 25) -> list[dict[str, str | int]]:
             for path in files]
 
 
-def create_reporting_user(admin_user: str, admin_password: str) -> dict[str, str]:
+def create_reporting_user(admin_user: str = "", admin_password: str = "") -> dict[str, str]:
     settings = load_settings()
-    if not admin_user.strip() or not admin_password:
-        raise RuntimeError("PostgreSQL administrator username and password are required")
-    admin_settings = dict(settings)
-    admin_settings["POSTGRES_USER"] = admin_user.strip()
-    admin_settings["POSTGRES_PASSWORD"] = admin_password
+    from .local_postgres import managed_admin_settings
+    admin_settings = managed_admin_settings()
+    if admin_settings is None:
+        if not admin_user.strip() or not admin_password:
+            raise RuntimeError("PostgreSQL administrator username and password are required")
+        admin_settings = dict(settings)
+        admin_settings["POSTGRES_USER"] = admin_user.strip()
+        admin_settings["POSTGRES_PASSWORD"] = admin_password
     username = "statement_reader_" + secrets.token_hex(4)
     password = secrets.token_urlsafe(24)
     with connect(admin_settings) as connection:

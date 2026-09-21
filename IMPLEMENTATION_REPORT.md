@@ -72,3 +72,23 @@ This public report intentionally excludes personal statement names, passwords, a
 ## Current assurance boundary
 
 The project is suitable for personal use and controlled beta evaluation. It is not represented as regulated financial software. Public production deployment still benefits from Authenticode signing, independent penetration testing, clean-machine compatibility testing, hostile-file fuzzing, and documented organizational backup and recovery procedures.
+
+## 8. Layman-friendly local database setup (v1.2.0)
+
+- Added a recommended one-click first-run path that initializes an isolated local PostgreSQL cluster.
+- Generates separate owner and least-privilege application credentials with cryptographically secure randomness.
+- Protects generated credentials with Windows DPAPI and never places passwords on a command line.
+- Binds the managed server to `127.0.0.1`, selects a dedicated local port, and starts it automatically on later launches.
+- Preserves the existing manual PostgreSQL connection form under an Advanced section.
+- Makes missing-prerequisite installer tasks selected by default when PostgreSQL or WebView2 is absent.
+
+### v1.2.0 verification record
+
+- Python compile check: passed for application, desktop host, installer launcher, modules, scripts, and tests.
+- Unit suite: 13 of 13 tests passed, including dedicated-port selection and least-privilege managed settings.
+- First-run page render check: passed for the recommended one-click action and Advanced manual fallback.
+- PyInstaller Windows x64 application build: passed.
+- Inno Setup 6.7.3 installer compile: passed; product version verified as 1.2.0.
+- SHA-256 generated for the setup package and embedded application executable.
+- Authenticode status remains `NotSigned` until the submitted SignPath Foundation application is approved.
+- A full temporary-cluster smoke run was attempted in the Codex sandbox. PostgreSQL initialization completed, but `pg_ctl` rejected the sandbox's restricted Windows token before server start (`error code 87`). This is an environment boundary, not recorded as a pass; clean-machine non-elevated verification remains required before broad distribution.
