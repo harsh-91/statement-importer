@@ -184,3 +184,18 @@ The project is suitable for personal use and controlled beta evaluation. It is n
 - SHA-256: the exact installer digest is published in `SHA256SUMS.txt`; application `F9998E0DEF877439D3D8C9C6F61964450416C5A3E9329CD78D9E1A28A00FB1DD`.
 - Authenticode inspection: `NotSigned`; public signing-status disclosure remains required until SignPath Foundation approval.
 - The actual forced close was not run against the user's active installation during verification, so no user process or data was disturbed.
+
+## 14. Bounded upgrade preparation (v1.3.5)
+
+- Replaced the blocking installer calls that could wait indefinitely for a previous PyInstaller launcher.
+- The installer now starts the targeted compatibility close without waiting for that command, then pauses only two seconds before file replacement.
+- Inno Setup's generic application-closing feature remains disabled.
+
+### v1.3.5 verification record
+
+- Python compile check: passed.
+- Unit suite: 24 of 24 tests passed.
+- PyInstaller Windows x64 application build: passed.
+- Inno Setup 6.7.3 installer compile: passed; product version verified as 1.3.5.
+- SHA-256: the exact installer digest is published in `SHA256SUMS.txt`.
+- The new targeted close was not run against the user's active installation during verification, so no user process or data was disturbed.

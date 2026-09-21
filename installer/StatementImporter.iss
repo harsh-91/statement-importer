@@ -1,6 +1,6 @@
 ; Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0
 #define MyAppName "Statement Importer"
-#define MyAppVersion "1.3.4"
+#define MyAppVersion "1.3.5"
 #define MyAppPublisher "Harsh"
 #define MyAppExeName "StatementImporter.exe"
 
@@ -24,7 +24,7 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0.17763
 OutputDir=..\dist
-OutputBaseFilename=StatementImporter-1.3.4-Setup-x64
+OutputBaseFilename=StatementImporter-1.3.5-Setup-x64
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
@@ -80,16 +80,13 @@ begin
   ExistingApp := ExpandConstant('{app}\StatementImporter.exe');
   if FileExists(ExistingApp) then
   begin
-    { Newer versions exit cleanly after receiving this request. }
-    Exec(ExistingApp, '--shutdown', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
-    Sleep(3000);
-
-    { Older versions do not understand --shutdown. Target the existing per-user
-      installation directly and avoid the generic Restart Manager flow. }
+    { Do not wait on the prior executable. Some old one-file builds can keep the
+      launcher alive indefinitely. Issue the close asynchronously, then wait only
+      a short bounded interval for Windows to release the installed file. }
     TaskkillPath := ExpandConstant('{sys}\taskkill.exe');
     if FileExists(TaskkillPath) then
-      Exec(TaskkillPath, '/IM StatementImporter.exe /T /F', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
-    Sleep(1000);
+      Exec(TaskkillPath, '/IM StatementImporter.exe /T /F', '', SW_HIDE, ewNoWait, ResultCode);
+    Sleep(2000);
   end;
 end;
 

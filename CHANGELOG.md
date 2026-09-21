@@ -3,6 +3,11 @@
 
 Created by Harsh · Made in India 🇮🇳
 
+## 1.3.5 - 2026-09-21
+
+- Fixed setup remaining indefinitely on “Preparing to Install” while waiting for an older one-file application launcher to exit.
+- Replaced the blocking close command with a non-blocking targeted close and a fixed two-second bounded wait before file replacement.
+
 ## 1.3.4 - 2026-09-21
 
 - Removed Inno Setup's generic automatic application-closing phase, which could still show a blocking Restart Manager dialog.
