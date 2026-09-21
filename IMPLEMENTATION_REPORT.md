@@ -168,3 +168,19 @@ The project is suitable for personal use and controlled beta evaluation. It is n
 - SHA-256: the exact installer digest is published in `SHA256SUMS.txt`; application `6CF3DDBEF39C787A38B1ABD67E36CEFC5472D2DECB13073F1BB0107577E2A04E`.
 - Authenticode inspection: `NotSigned`; public signing-status disclosure remains required until SignPath Foundation approval.
 - The compatibility fallback was not run against the user's active installed copy during verification, so no user process or data was disturbed.
+
+## 13. Direct installer close path (v1.3.4)
+
+- Disabled Inno Setup's generic `CloseApplications` feature, which was still emitting a blocking Restart Manager dialog on the user's Windows installation.
+- Before file replacement, setup now directly invokes the installed copy with `--shutdown`, waits three seconds, then applies a bounded `taskkill` compatibility close only when replacing an existing per-user installation.
+- The generic application-closing UI is no longer part of this installation path.
+
+### v1.3.4 verification record
+
+- Python compile check: passed.
+- Unit suite: 24 of 24 tests passed.
+- PyInstaller Windows x64 application build: passed.
+- Inno Setup 6.7.3 installer compile: passed; product version verified as 1.3.4.
+- SHA-256: the exact installer digest is published in `SHA256SUMS.txt`; application `F9998E0DEF877439D3D8C9C6F61964450416C5A3E9329CD78D9E1A28A00FB1DD`.
+- Authenticode inspection: `NotSigned`; public signing-status disclosure remains required until SignPath Foundation approval.
+- The actual forced close was not run against the user's active installation during verification, so no user process or data was disturbed.

@@ -3,6 +3,12 @@
 
 Created by Harsh · Made in India 🇮🇳
 
+## 1.3.4 - 2026-09-21
+
+- Removed Inno Setup's generic automatic application-closing phase, which could still show a blocking Restart Manager dialog.
+- The installer now runs its own direct close routine before copying files: a controlled shutdown for new builds and a bounded compatibility close for older ones.
+- The direct routine is only invoked when replacing an existing per-user Statement Importer installation.
+
 ## 1.3.3 - 2026-09-21
 
 - Fixed upgrades getting stuck at “Closing applications.”
