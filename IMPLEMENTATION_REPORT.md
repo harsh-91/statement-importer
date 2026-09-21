@@ -1,4 +1,4 @@
-<!-- Created by Harsh (@harsh-91) | Made in India -->
+<!-- Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0 -->
 # Statement Importer implementation report
 
 Created by Harsh · Made in India 🇮🇳
@@ -113,3 +113,21 @@ The project is suitable for personal use and controlled beta evaluation. It is n
 - Inno Setup 6.7.3 installer compile: passed; product version verified as 1.3.0.
 - SHA-256: installer `589FAE2985D8A4C65B7C038F47DD26C7130A0EAF21A9BAD7DC8654050B90E5C2`; application `CA8DC6E47912ABB9403415185AAC1F1AD1F35622F63A2DFE4C8D557B7582B39B`.
 - Authenticode inspection: both artifacts remain `NotSigned`; this is disclosed, and the updater intentionally refuses them until SignPath Foundation signing is available.
+
+## 10. Apache-2.0 licensing (v1.3.1)
+
+- Replaced the MIT license for version 1.3.1 and future releases with the complete Apache License 2.0 text from the Apache Software Foundation.
+- Added a distributable `NOTICE` with copyright, creator, and Made in India attribution.
+- Added SPDX `Apache-2.0` identifiers throughout the source and documentation files.
+- Included both `LICENSE.md` and `NOTICE` in the Windows installer and portable setup payload.
+- Preserved the historical licensing record: versions through 1.3.0 remain available under their original MIT terms.
+
+### v1.3.1 verification record
+
+- Official Apache License 2.0 text comparison: passed after whitespace normalization.
+- Python compile check: passed.
+- Unit suite: 19 of 19 tests passed.
+- PyInstaller Windows x64 application build: passed.
+- Inno Setup 6.7.3 installer compile: passed and confirmed inclusion of `LICENSE.md` and `NOTICE`; product version verified as 1.3.1.
+- SHA-256: installer `D094B90E4577A020438B50462FFA1FF8CA7D3A90271A63B3A43C3E66CD50081A`; application `FB27BD0B20868290314ACADAA192AED820AF375EAF3B0850A9B8D85115C4CDD3`.
+- Authenticode inspection: `NotSigned`; public signing-status disclosure remains required.

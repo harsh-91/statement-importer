@@ -1,9 +1,13 @@
-<!-- Created by Harsh (@harsh-91) | Made in India -->
-# Statement Importer 1.3.0
+<!-- Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0 -->
+# Statement Importer 1.3.1
 
 Created by **Harsh** ([@harsh-91](https://github.com/harsh-91)) · Made in India 🇮🇳
 
 ## Highlights
+
+- Changed the project license for this and future releases to Apache License 2.0.
+- Added an Apache `NOTICE` preserving creator attribution: Harsh Nair · Made in India.
+- Added SPDX `Apache-2.0` identifiers throughout the source distribution.
 
 - Offline-first Windows desktop statement importer backed by PostgreSQL.
 - Structural recognition and reconciliation for SBI, ICICI Bank, and IndusInd Bank statements.
@@ -34,11 +38,11 @@ The installer can offer optional winget prerequisite downloads. Once prerequisit
 
 ## Install
 
-1. Download `StatementImporter-1.3.0-Setup-x64.exe` and `SHA256SUMS.txt`.
+1. Download `StatementImporter-1.3.1-Setup-x64.exe` and `SHA256SUMS.txt`.
 2. Verify the installer SHA-256 checksum.
 3. Run the installer and review its prerequisite screen.
 4. Launch Statement Importer and click **Create my local database automatically**.
 
 ## Distribution notice
 
-Statement Importer is open-source software distributed under the MIT License. Check the release page for the signing status of this installer, verify its published SHA-256, and review the [code signing policy](https://github.com/harsh-91/statement-importer/blob/main/CODE_SIGNING.md). The in-app updater refuses unsigned installers. This release is not represented as regulated financial software and should receive independent review before regulated or high-risk use.
+Statement Importer 1.3.1 is open-source software distributed under the Apache License 2.0. Versions through 1.3.0 retain their original MIT terms. Check the release page for the signing status of this installer, verify its published SHA-256, and review the [code signing policy](https://github.com/harsh-91/statement-importer/blob/main/CODE_SIGNING.md). The in-app updater refuses unsigned installers. This release is not represented as regulated financial software and should receive independent review before regulated or high-risk use.

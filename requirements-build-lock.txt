@@ -1,4 +1,4 @@
-# Created by Harsh (@harsh-91) | Made in India
+# Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0
 -r requirements-lock.txt
 altgraph==0.17.5
 pefile==2024.8.26

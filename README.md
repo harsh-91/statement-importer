@@ -1,4 +1,4 @@
-<!-- Created by Harsh (@harsh-91) | Made in India -->
+<!-- Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0 -->
 # Statement Importer
 
 **Created by [Harsh (@harsh-91)](https://github.com/harsh-91) · Made in India 🇮🇳**
@@ -7,7 +7,7 @@ Offline-first Windows desktop application for reconciling bank statements into P
 
 ## Install
 
-Download `StatementImporter-1.3.0-Setup-x64.exe` from the repository's [latest release](https://github.com/harsh-91/statement-importer/releases/latest). The standard Windows wizard provides per-user installation, upgrade handling, shortcut choices, Programs & Features registration, and a data-preserving uninstaller.
+Download `StatementImporter-1.3.1-Setup-x64.exe` from the repository's [latest release](https://github.com/harsh-91/statement-importer/releases/latest). The standard Windows wizard provides per-user installation, upgrade handling, shortcut choices, Programs & Features registration, and a data-preserving uninstaller.
 
 This build targets supported 64-bit Intel/AMD editions of Windows 10 (build 17763+) and Windows 11. The setup checks the platform, PostgreSQL, and Microsoft Edge WebView2; PostgreSQL and WebView2 can be installed through winget or supplied manually.
 
@@ -83,7 +83,7 @@ Build the app and setup executable:
 .\build_windows.ps1
 ```
 
-When Inno Setup 6/7 or the project-local compiler is available, the build also produces the conventional `StatementImporter-1.3.0-Setup-x64.exe` installer from `installer\StatementImporter.iss`.
+When Inno Setup 6/7 or the project-local compiler is available, the build also produces the conventional `StatementImporter-1.3.1-Setup-x64.exe` installer from `installer\StatementImporter.iss`.
 
 See `IMPLEMENTATION_REPORT.md` for the full incremental implementation and test record.
 
@@ -91,7 +91,7 @@ See `IMPLEMENTATION_REPORT.md` for the full incremental implementation and test 
 
 Created by **Harsh** ([@harsh-91](https://github.com/harsh-91)) and made in India. 🇮🇳
 
-Statement Importer is open-source software released under the [MIT License](LICENSE.md). You may use, modify, distribute, sublicense, and sell copies while preserving the copyright and license notice. See [SECURITY.md](SECURITY.md) before reporting a vulnerability and [CONTRIBUTING.md](CONTRIBUTING.md) before submitting changes.
+Statement Importer releases from version 1.3.1 are open-source software under the [Apache License 2.0](LICENSE.md), including its explicit patent grant and redistribution conditions. Preserve the [NOTICE](NOTICE) attribution in derivative distributions. Versions through 1.3.0 remain available under their original MIT terms. See [SECURITY.md](SECURITY.md) before reporting a vulnerability and [CONTRIBUTING.md](CONTRIBUTING.md) before submitting changes.
 
 ## Public distribution
 

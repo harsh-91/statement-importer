@@ -1,3 +1,3 @@
-# Created by Harsh (@harsh-91) | Made in India
+# Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0
 -r requirements.txt
 pyinstaller==6.22.3

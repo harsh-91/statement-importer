@@ -1,4 +1,4 @@
-# Created by Harsh (@harsh-91) | Made in India
+# Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0
 from __future__ import annotations
 
 import os
@@ -70,7 +70,7 @@ def register_uninstaller() -> None:
     key_path = r"Software\Microsoft\Windows\CurrentVersion\Uninstall\StatementImporter"
     with winreg.CreateKey(winreg.HKEY_CURRENT_USER, key_path) as key:
         winreg.SetValueEx(key, "DisplayName", 0, winreg.REG_SZ, APP_NAME)
-        winreg.SetValueEx(key, "DisplayVersion", 0, winreg.REG_SZ, "1.3.0")
+        winreg.SetValueEx(key, "DisplayVersion", 0, winreg.REG_SZ, "1.3.1")
         winreg.SetValueEx(key, "Publisher", 0, winreg.REG_SZ, "Harsh - Made in India")
         winreg.SetValueEx(key, "DisplayIcon", 0, winreg.REG_SZ, str(APP_EXE))
         winreg.SetValueEx(key, "UninstallString", 0, winreg.REG_SZ, f'"{UNINSTALL_EXE}" --uninstall')
@@ -188,7 +188,7 @@ class SetupWindow:
         INSTALL_DIR.mkdir(parents=True, exist_ok=True)
         shutil.copy2(payload, APP_EXE)
         shutil.copy2(sys.executable, UNINSTALL_EXE)
-        for document in ("QUICK_START.txt", "LICENSE.md"):
+        for document in ("QUICK_START.txt", "LICENSE.md", "NOTICE"):
             source = resource(f"payload/{document}")
             if source.exists():
                 shutil.copy2(source, INSTALL_DIR / document)

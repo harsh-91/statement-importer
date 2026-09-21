@@ -1,7 +1,14 @@
-<!-- Created by Harsh (@harsh-91) | Made in India -->
+<!-- Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0 -->
 # Changelog
 
 Created by Harsh · Made in India 🇮🇳
+
+## 1.3.1 - 2026-09-21
+
+- Relicensed this and future releases under Apache License 2.0.
+- Added a NOTICE file preserving creator and Made in India attribution.
+- Added SPDX `Apache-2.0` identifiers throughout the source distribution.
+- Versions through 1.3.0 remain under their original MIT terms.
 
 ## 1.3.0 - 2026-09-21
 

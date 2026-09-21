@@ -1,4 +1,4 @@
-# Created by Harsh (@harsh-91) | Made in India
+# Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0
 from __future__ import annotations
 
 import threading

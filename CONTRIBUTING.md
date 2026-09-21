@@ -1,11 +1,11 @@
-<!-- Created by Harsh (@harsh-91) | Made in India -->
+<!-- Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0 -->
 # Contributing
 
 Created by Harsh · Made in India 🇮🇳
 
 Contributions are welcome through focused issues and pull requests. Never commit real bank statements, passwords, account numbers, `.env` files, database dumps, API keys, or screenshots containing financial data.
 
-By contributing, you agree that your contribution is licensed under the project's [MIT License](LICENSE.md).
+Unless you explicitly state otherwise, contributions intentionally submitted for inclusion are licensed under the project's [Apache License 2.0](LICENSE.md), as described in section 5 of that license.
 
 Before opening a pull request:
 

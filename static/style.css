@@ -1,4 +1,4 @@
-/* Created by Harsh (@harsh-91) | Made in India */
+/* Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0 */
 :root { color-scheme: dark; --bg:#050812; --panel:#0a1020; --grid:#111d36; --cyan:#54f7ff; --green:#74ff80; --amber:#ffd75a; --red:#ff5577; --blue:#678cff; --muted:#8aa0b8; --ink:#e7fbff; --shadow:#02040a; }
 * { box-sizing:border-box; }
 html { min-height:100%; background:var(--bg); }

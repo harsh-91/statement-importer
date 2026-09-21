@@ -1,4 +1,4 @@
-/* Created by Harsh (@harsh-91) | Made in India */
+/* Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0 */
 (() => {
   const files = document.getElementById('statement-files');
   const queue = document.getElementById('file-queue');

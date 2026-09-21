@@ -1,4 +1,4 @@
-# Created by Harsh (@harsh-91) | Made in India
+# Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0
 blinker==1.9.0
 bottle==0.13.4
 cffi==2.1.1

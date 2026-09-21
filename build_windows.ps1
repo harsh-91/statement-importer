@@ -1,4 +1,4 @@
-# Created by Harsh (@harsh-91) | Made in India
+# Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $python = Join-Path $projectRoot '.venv\Scripts\python.exe'
@@ -14,6 +14,7 @@ New-Item -ItemType Directory -Path (Join-Path $projectRoot 'setup-payload') -For
 Copy-Item -LiteralPath (Join-Path $projectRoot 'dist\StatementImporter.exe') -Destination (Join-Path $projectRoot 'setup-payload\StatementImporter.exe') -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'QUICK_START.txt') -Destination (Join-Path $projectRoot 'setup-payload\QUICK_START.txt') -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'LICENSE.md') -Destination (Join-Path $projectRoot 'setup-payload\LICENSE.md') -Force
+Copy-Item -LiteralPath (Join-Path $projectRoot 'NOTICE') -Destination (Join-Path $projectRoot 'setup-payload\NOTICE') -Force
 & $python -m PyInstaller --noconfirm --clean --onefile --windowed --name StatementImporterSetup `
     --add-data "setup-payload;payload" setup_launcher.py
 if ($LASTEXITCODE -ne 0) { throw 'StatementImporterSetup.exe build failed. Close any running copy and retry.' }
@@ -33,7 +34,7 @@ $iscc = @($localIscc, $registeredIscc, $installedIscc7, $installedIscc) | Where-
 if ($iscc) {
     & $iscc (Join-Path $projectRoot 'installer\StatementImporter.iss')
     if ($LASTEXITCODE -ne 0) { throw 'Conventional installer build failed.' }
-    Write-Host "Built: $projectRoot\dist\StatementImporter-1.3.0-Setup-x64.exe"
+    Write-Host "Built: $projectRoot\dist\StatementImporter-1.3.1-Setup-x64.exe"
 } else {
     Write-Warning 'Inno Setup compiler not found; conventional installer was not built.'
 }
