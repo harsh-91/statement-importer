@@ -91,4 +91,4 @@ Statement Importer is open-source software released under the [MIT License](LICE
 
 ## Public distribution
 
-The current executables are unsigned. Windows SmartScreen may display an unknown-publisher warning. A public production release should use an Authenticode code-signing certificate and publish the supplied SHA-256 checksums. This release is suitable for local use and controlled beta testing, not regulated financial processing without independent security review and clean-machine certification.
+The current executables are unsigned. Windows SmartScreen may display an unknown-publisher warning. Verify the supplied SHA-256 checksums before running a release. See the [code signing policy](CODE_SIGNING.md) for the trusted open-source signing plan and current status. This release is suitable for local use and controlled beta testing, not regulated financial processing without independent security review and clean-machine certification.
