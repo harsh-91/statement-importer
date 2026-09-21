@@ -5,6 +5,8 @@ Created by Harsh · Made in India 🇮🇳
 
 Contributions are welcome through focused issues and pull requests. Never commit real bank statements, passwords, account numbers, `.env` files, database dumps, API keys, or screenshots containing financial data.
 
+By contributing, you agree that your contribution is licensed under the project's [MIT License](LICENSE.md).
+
 Before opening a pull request:
 
 1. Use synthetic fixtures only.

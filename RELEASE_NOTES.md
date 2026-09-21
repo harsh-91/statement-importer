@@ -32,4 +32,4 @@ The installer can offer optional winget prerequisite downloads. Once prerequisit
 
 ## Distribution notice
 
-The installer is not Authenticode-signed, so Windows SmartScreen may show an unknown-publisher warning. The release is intended for personal use and controlled beta evaluation, not regulated financial processing without independent review.
+Statement Importer is open-source software distributed under the MIT License. The installer is not Authenticode-signed, so Windows SmartScreen may show an unknown-publisher warning. This release is not represented as regulated financial software and should receive independent review before regulated or high-risk use.

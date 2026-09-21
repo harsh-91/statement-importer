@@ -87,7 +87,7 @@ See `IMPLEMENTATION_REPORT.md` for the full incremental implementation and test 
 
 Created by **Harsh** ([@harsh-91](https://github.com/harsh-91)) and made in India. 🇮🇳
 
-The source is published under the terms in [LICENSE.md](LICENSE.md). See [SECURITY.md](SECURITY.md) before reporting a vulnerability and [CONTRIBUTING.md](CONTRIBUTING.md) before submitting changes.
+Statement Importer is open-source software released under the [MIT License](LICENSE.md). You may use, modify, distribute, sublicense, and sell copies while preserving the copyright and license notice. See [SECURITY.md](SECURITY.md) before reporting a vulnerability and [CONTRIBUTING.md](CONTRIBUTING.md) before submitting changes.
 
 ## Public distribution
 

@@ -3,6 +3,10 @@
 
 Created by Harsh · Made in India 🇮🇳
 
+## Unreleased
+
+- Released the project as open-source software under the MIT License.
+
 ## 1.1.0 - 2026-09-21
 
 - Added conventional x64 Windows installer and prerequisite detection.
