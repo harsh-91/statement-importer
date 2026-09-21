@@ -19,7 +19,7 @@ psycopg==3.3.6
 psycopg-binary==3.3.6
 pycparser==3.0
 pythonnet==3.1.0
-pywebview==5.4
+pywebview==6.2.1
 typing_extensions==4.16.0
 tzdata==2026.4
 Werkzeug==3.1.8
