@@ -3,6 +3,13 @@
 
 Created by Harsh · Made in India 🇮🇳
 
+## 1.3.3 - 2026-09-21
+
+- Fixed upgrades getting stuck at “Closing applications.”
+- Added a named Windows shutdown signal for controlled in-app exit during future upgrades.
+- Added a bounded compatibility fallback that closes pre-1.3.3 processes before files are replaced.
+- Setup now stops with an actionable message if the application still cannot be closed.
+
 ## 1.3.2 - 2026-09-21
 
 - Prevented the existing-database wizard from hanging on unreachable PostgreSQL servers.

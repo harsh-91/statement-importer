@@ -3,6 +3,9 @@ from __future__ import annotations
 
 import threading
 import ctypes
+from ctypes import wintypes
+import os
+import sys
 import webbrowser
 
 import webview
@@ -18,6 +21,10 @@ from statement_importer.updater import start_background_check
 
 
 _mutex_handle = None
+_shutdown_event_handle = None
+SHUTDOWN_EVENT_NAME = "Local\\StatementImporterShutdown"
+EVENT_MODIFY_STATE = 0x0002
+INFINITE = 0xFFFFFFFF
 
 
 def acquire_single_instance() -> bool:
@@ -26,6 +33,40 @@ def acquire_single_instance() -> bool:
         return True
     _mutex_handle = ctypes.windll.kernel32.CreateMutexW(None, False, "Local\\StatementImporterDesktop")
     return bool(_mutex_handle) and ctypes.windll.kernel32.GetLastError() != 183
+
+
+def signal_running_instance_shutdown() -> bool:
+    if not hasattr(ctypes, "windll"):
+        return False
+    kernel32 = ctypes.windll.kernel32
+    kernel32.OpenEventW.argtypes = (wintypes.DWORD, wintypes.BOOL, wintypes.LPCWSTR)
+    kernel32.OpenEventW.restype = wintypes.HANDLE
+    handle = kernel32.OpenEventW(EVENT_MODIFY_STATE, False, SHUTDOWN_EVENT_NAME)
+    if not handle:
+        return False
+    try:
+        return bool(kernel32.SetEvent(handle))
+    finally:
+        kernel32.CloseHandle(handle)
+
+
+def start_shutdown_listener(server: "LocalServer") -> None:
+    global _shutdown_event_handle
+    if not hasattr(ctypes, "windll"):
+        return
+    kernel32 = ctypes.windll.kernel32
+    kernel32.CreateEventW.argtypes = (wintypes.LPVOID, wintypes.BOOL, wintypes.BOOL, wintypes.LPCWSTR)
+    kernel32.CreateEventW.restype = wintypes.HANDLE
+    _shutdown_event_handle = kernel32.CreateEventW(None, True, False, SHUTDOWN_EVENT_NAME)
+    if not _shutdown_event_handle:
+        return
+
+    def wait_for_installer() -> None:
+        kernel32.WaitForSingleObject(_shutdown_event_handle, INFINITE)
+        server.stop()
+        os._exit(0)
+
+    threading.Thread(target=wait_for_installer, name="installer-shutdown", daemon=True).start()
 
 
 class LocalServer:
@@ -42,6 +83,9 @@ class LocalServer:
 
 
 def main():
+    if "--shutdown" in sys.argv:
+        signal_running_instance_shutdown()
+        return
     if not acquire_single_instance():
         webbrowser.open("http://127.0.0.1:8765")
         return
@@ -62,6 +106,7 @@ def main():
             pass
     server = LocalServer()
     server.start()
+    start_shutdown_listener(server)
     try:
         webview.create_window(
             "Statement Importer",

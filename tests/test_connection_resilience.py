@@ -1,5 +1,6 @@
 # Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0
 import unittest
+from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
 import app as web_app
@@ -48,6 +49,18 @@ class DatabaseConnectionTimeoutTests(unittest.TestCase):
         self.assertIn(b"Could not connect", response.data)
         self.assertIn(b"within 5 seconds", response.data)
         self.assertNotIn(b"internal detail", response.data)
+
+    def test_installer_shutdown_signal_uses_named_event(self):
+        kernel32 = Mock()
+        kernel32.OpenEventW.return_value = 42
+        kernel32.SetEvent.return_value = 1
+        with patch.object(desktop.ctypes, "windll", SimpleNamespace(kernel32=kernel32), create=True):
+            self.assertTrue(desktop.signal_running_instance_shutdown())
+        kernel32.OpenEventW.assert_called_once_with(
+            desktop.EVENT_MODIFY_STATE, False, desktop.SHUTDOWN_EVENT_NAME
+        )
+        kernel32.SetEvent.assert_called_once_with(42)
+        kernel32.CloseHandle.assert_called_once_with(42)
 
 
 if __name__ == "__main__":

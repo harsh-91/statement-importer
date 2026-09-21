@@ -1,6 +1,6 @@
 ; Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0
 #define MyAppName "Statement Importer"
-#define MyAppVersion "1.3.2"
+#define MyAppVersion "1.3.3"
 #define MyAppPublisher "Harsh"
 #define MyAppExeName "StatementImporter.exe"
 
@@ -24,7 +24,7 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0.17763
 OutputDir=..\dist
-OutputBaseFilename=StatementImporter-1.3.2-Setup-x64
+OutputBaseFilename=StatementImporter-1.3.3-Setup-x64
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
@@ -70,6 +70,48 @@ Filename: "{app}\{#MyAppExeName}"; Description: "Launch {#MyAppName}"; Flags: no
 [Code]
 var
   PrerequisitePage: TOutputMsgMemoWizardPage;
+
+function StopRunningStatementImporter: Boolean;
+var
+  ResultCode, Attempt: Integer;
+  ExistingApp, TaskkillPath: String;
+begin
+  Result := True;
+  if not CheckForMutexes('Local\StatementImporterDesktop') then
+    exit;
+
+  ExistingApp := ExpandConstant('{app}\StatementImporter.exe');
+  if FileExists(ExistingApp) then
+    Exec(ExistingApp, '--shutdown', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+
+  for Attempt := 1 to 24 do
+  begin
+    if not CheckForMutexes('Local\StatementImporterDesktop') then
+      exit;
+    Sleep(125);
+  end;
+
+  { Versions before 1.3.3 do not understand --shutdown. PostgreSQL transactions
+    roll back safely if this bounded compatibility fallback is required. }
+  TaskkillPath := ExpandConstant('{sys}\taskkill.exe');
+  if FileExists(TaskkillPath) then
+    Exec(TaskkillPath, '/IM StatementImporter.exe /T /F', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+
+  for Attempt := 1 to 40 do
+  begin
+    if not CheckForMutexes('Local\StatementImporterDesktop') then
+      exit;
+    Sleep(125);
+  end;
+  Result := not CheckForMutexes('Local\StatementImporterDesktop');
+end;
+
+function PrepareToInstall(var NeedsRestart: Boolean): String;
+begin
+  Result := '';
+  if not StopRunningStatementImporter then
+    Result := 'Statement Importer is still running. Close it from Task Manager, then choose Try again.';
+end;
 
 function HasPostgreSQL: Boolean;
 begin

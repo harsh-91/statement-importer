@@ -1,9 +1,13 @@
 <!-- Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0 -->
-# Statement Importer 1.3.2
+# Statement Importer 1.3.3
 
 Created by **Harsh** ([@harsh-91](https://github.com/harsh-91)) · Made in India 🇮🇳
 
 ## Highlights
+
+- Fixed Windows Setup stopping at “Closing applications” during an upgrade.
+- Setup requests a controlled shutdown and waits for the application to release its files.
+- Older versions receive a bounded compatibility close; setup refuses to overwrite files if closure still fails.
 
 - Fixed the Advanced existing-database wizard freezing when PostgreSQL is unreachable.
 - Connection attempts now stop after five seconds and return an actionable error.
@@ -42,11 +46,12 @@ The installer can offer optional winget prerequisite downloads. Once prerequisit
 
 ## Install
 
-1. Download `StatementImporter-1.3.2-Setup-x64.exe` and `SHA256SUMS.txt`.
-2. Verify the installer SHA-256 checksum.
-3. Run the installer and review its prerequisite screen.
-4. Launch Statement Importer and click **Create my local database automatically**.
+1. Cancel any older installer currently showing a closing-applications error.
+2. Download `StatementImporter-1.3.3-Setup-x64.exe` and `SHA256SUMS.txt`.
+3. Verify the installer SHA-256 checksum.
+4. Run the installer; it safely closes the previous application version during upgrade.
+5. Launch Statement Importer and click **Create my local database automatically**.
 
 ## Distribution notice
 
-Statement Importer 1.3.2 is open-source software distributed under the Apache License 2.0. Versions through 1.3.0 retain their original MIT terms. Check the release page for the signing status of this installer, verify its published SHA-256, and review the [code signing policy](https://github.com/harsh-91/statement-importer/blob/main/CODE_SIGNING.md). The in-app updater refuses unsigned installers. This release is not represented as regulated financial software and should receive independent review before regulated or high-risk use.
+Statement Importer 1.3.3 is open-source software distributed under the Apache License 2.0. Versions through 1.3.0 retain their original MIT terms. Check the release page for the signing status of this installer, verify its published SHA-256, and review the [code signing policy](https://github.com/harsh-91/statement-importer/blob/main/CODE_SIGNING.md). The in-app updater refuses unsigned installers. This release is not represented as regulated financial software and should receive independent review before regulated or high-risk use.

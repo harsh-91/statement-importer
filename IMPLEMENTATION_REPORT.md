@@ -149,3 +149,22 @@ The project is suitable for personal use and controlled beta evaluation. It is n
 - Inno Setup 6.7.3 installer compile: passed; product version verified as 1.3.2.
 - SHA-256: installer `8817714BFE8E0716A6697B23838B3A29E0994C6AD8B5147B9414ABA2E47BB27F`; application `B5FE82BD1DC48DD6DEF8AE24B432FD3084CF1C3EBFF838D126B9F9C9327B6DF8`.
 - Authenticode inspection: `NotSigned`; public signing-status disclosure remains required.
+
+## 12. Reliable application shutdown during upgrade (v1.3.3)
+
+- Added a named Windows event that lets the installer request shutdown from v1.3.3 and later.
+- The desktop listener stops the local web server before terminating the packaged process and releasing its executable.
+- Installer upgrades first invoke the installed app with `--shutdown`, then wait up to three seconds.
+- For older builds without shutdown support, setup uses `taskkill` once and waits up to five seconds.
+- If the application still owns its mutex, setup stops with an actionable error rather than overwriting locked files.
+
+### v1.3.3 verification record
+
+- Python compile check: passed.
+- Unit suite: 24 of 24 tests passed, including named-event shutdown signalling.
+- Packaged `StatementImporter.exe --shutdown` smoke check: passed with exit code 0.
+- PyInstaller Windows x64 application build: passed.
+- Inno Setup 6.7.3 installer compile: passed; product version verified as 1.3.3.
+- SHA-256: the exact installer digest is published in `SHA256SUMS.txt`; application `6CF3DDBEF39C787A38B1ABD67E36CEFC5472D2DECB13073F1BB0107577E2A04E`.
+- Authenticode inspection: `NotSigned`; public signing-status disclosure remains required until SignPath Foundation approval.
+- The compatibility fallback was not run against the user's active installed copy during verification, so no user process or data was disturbed.
