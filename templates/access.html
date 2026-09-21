@@ -1,0 +1,22 @@
+<!-- Created by Harsh (@harsh-91) | Made in India -->
+<!doctype html>
+<html lang="en" data-effects="on">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>API / MCP // Statement Importer</title><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head>
+<body>
+<div class="scanlines" aria-hidden="true"></div>
+<main class="shell setup-shell">
+  <nav class="topbar"><a class="brand" href="{{ url_for('index') }}">&lt; STATEMENT_IMPORTER</a><span class="system-light"><i></i> LOCAL ONLY</span></nav>
+  <header class="hero"><p class="command">C:\BANK_DATA&gt; ACCESS.EXE</p><h1>API <span>+ MCP</span></h1><p class="intro">Read-only local access for reporting tools and AI clients. Both services are disabled until you activate them.</p></header>
+
+  {% if generated_key %}<section class="terminal-panel key-reveal"><div class="panel-title"><span>!</span> COPY THIS KEY NOW</div><div class="key-body"><code>{{ generated_key }}</code><p>The full key will not be shown again.</p></div></section>{% endif %}
+
+  <section class="service-grid">
+    <article class="terminal-panel service-card"><div class="panel-title"><span>A</span> REST API</div><div class="service-body"><p class="service-state {{ 'on' if services.api_enabled else 'off' }}">{{ 'ONLINE' if services.api_enabled else 'OFFLINE' }}</p><p>Endpoint: <code>{{ base_url }}/api/v1</code></p><form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="toggle_api"><input type="hidden" name="enabled" value="{{ 'false' if services.api_enabled else 'true' }}"><button type="submit">{{ 'DISABLE API' if services.api_enabled else 'ENABLE API' }}</button></form></div></article>
+    <article class="terminal-panel service-card"><div class="panel-title"><span>M</span> MCP SERVER</div><div class="service-body"><p class="service-state {{ 'on' if services.mcp_enabled else 'off' }}">{{ 'ONLINE' if services.mcp_enabled else 'OFFLINE' }}</p><p>Endpoint: <code>{{ base_url }}/mcp</code></p><form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="toggle_mcp"><input type="hidden" name="enabled" value="{{ 'false' if services.mcp_enabled else 'true' }}"><button type="submit">{{ 'DISABLE MCP' if services.mcp_enabled else 'ENABLE MCP' }}</button></form></div></article>
+  </section>
+
+  <section class="terminal-panel"><div class="panel-title"><span>K</span> ACCESS KEYS</div><form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="create_key"><label><span>KEY LABEL</span><input name="label" value="Local reporting" maxlength="80"></label><button type="submit">GENERATE READ-ONLY KEY</button></form><div class="credential-list">{% for key in credentials %}<div><span><strong>{{ key.label }}</strong><small>CREATED {{ key.created_at[:10] }}{% if key.revoked_at %} // REVOKED{% endif %}</small></span>{% if not key.revoked_at %}<form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="revoke_key"><input type="hidden" name="key_id" value="{{ key.id }}"><button type="submit" class="danger-button">REVOKE</button></form>{% endif %}</div>{% else %}<p class="note">NO ACCESS KEYS CREATED.</p>{% endfor %}</div></section>
+
+  <section class="terminal-panel"><div class="panel-title"><span>?</span> CONNECT</div><div class="service-body"><p>REST: Send <code>X-API-Key: YOUR_KEY</code>. Download the schema at <code>/api/v1/openapi.json</code>.</p><p>MCP: Configure an HTTP MCP client with the endpoint above and <code>Authorization: Bearer YOUR_KEY</code>.</p><p>Excel, Power BI, Tableau, and DBeaver can also connect directly to PostgreSQL using a read-only database user.</p></div></section>
+</main>
+</body></html>

@@ -1,0 +1,37 @@
+<!-- Created by Harsh (@harsh-91) | Made in India -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Connect PostgreSQL · Statement Importer</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="shell setup-shell">
+    <header>
+      <p class="eyebrow">FIRST-RUN SETUP</p>
+      <h1>Connect PostgreSQL</h1>
+      <p class="intro">Connect an existing PostgreSQL database. The app creates its three bank tables automatically and never sends statement data anywhere else.</p>
+    </header>
+
+    {% if error %}<div class="banner error-banner">{{ error }}</div>{% endif %}
+    {% if success %}<div class="banner success-banner">Connection saved and tables are ready. <a href="{{ url_for('index') }}">Open the importer</a>.</div>{% endif %}
+
+    <section class="panel">
+      <form method="post" class="setup-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-grid">
+          <label><span>Host</span><input name="host" value="{{ fields.POSTGRES_HOST }}" required></label>
+          <label><span>Port</span><input name="port" type="number" value="{{ fields.POSTGRES_PORT }}" required></label>
+          <label><span>Database</span><input name="database" value="{{ fields.POSTGRES_DB }}" required></label>
+          <label><span>User</span><input name="user" value="{{ fields.POSTGRES_USER }}" required></label>
+        </div>
+        <label class="password-field"><span>Password</span><input type="password" name="password" autocomplete="new-password" required></label>
+        <p class="note">The password is protected with Windows Data Protection API and can only be decrypted by this Windows account.</p>
+        <button type="submit">Test, save, and prepare tables</button>
+      </form>
+    </section>
+  </main>
+</body>
+</html>

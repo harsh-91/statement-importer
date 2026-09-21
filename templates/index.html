@@ -1,0 +1,108 @@
+<!-- Created by Harsh (@harsh-91) | Made in India -->
+<!doctype html>
+<html lang="en" data-effects="on">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Statement Importer // Terminal</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="scanlines" aria-hidden="true"></div>
+  <main class="shell">
+    <nav class="topbar">
+      <a class="brand" href="{{ url_for('index') }}">STATEMENT_IMPORTER<span class="cursor">_</span></a>
+      <div class="nav-actions">
+        <span class="system-light"><i></i> DB ONLINE</span>
+        <a href="{{ url_for('transaction_browser') }}">[ DATA ]</a>
+        <a href="{{ url_for('import_history') }}">[ HISTORY ]</a>
+        <a href="{{ url_for('access_settings') }}">[ API / MCP ]</a>
+        <a href="{{ url_for('maintenance') }}">[ SAFETY ]</a>
+        <a href="{{ url_for('setup_database') }}">[ DATABASE ]</a>
+        <button type="button" class="text-button" id="effects-toggle">[ FX: ON ]</button>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <p class="command">C:\BANK_DATA&gt; IMPORT.EXE</p>
+      <h1>IMPORT STATEMENTS.<br><span>SKIP DUPLICATES.</span></h1>
+      <p class="intro">Local reconciliation terminal for SBI, ICICI Bank, and IndusInd Bank. Files and passwords stay on this machine.</p>
+    </header>
+
+    <section class="dashboard" aria-label="Database summary">
+      <article><span>TRANSACTIONS</span><strong>{{ '{:,}'.format(stats.transactions) }}</strong></article>
+      <article><span>BANKS</span><strong>{{ stats.banks }}</strong></article>
+      <article><span>ACCOUNTS</span><strong>{{ stats.accounts }}</strong></article>
+      <article><span>LAST IMPORT</span><strong class="small-value">{{ stats.last_import.strftime('%d-%m-%Y') if stats.last_import else 'NO RUN' }}</strong></article>
+    </section>
+
+    <section class="terminal-panel upload-panel">
+      <div class="panel-title"><span>01</span> INSERT BANK STATEMENTS</div>
+      <form action="{{ url_for('upload_statements') }}" method="post" enctype="multipart/form-data" id="upload-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label class="dropzone" id="dropzone">
+          <span class="pixel-disk" aria-hidden="true">▣</span>
+          <span class="drop-title">DROP FILES HERE</span>
+          <span class="drop-copy">OR PRESS TO SELECT MULTIPLE .XLSX / .XLS / .CSV FILES</span>
+          <input type="file" name="statements" id="statement-files" accept=".xlsx,.xls,.csv" multiple required>
+        </label>
+
+        <div id="file-queue" class="file-queue" aria-live="polite">
+          <p class="empty-queue">FILES QUEUED: 00 // SYSTEM READY</p>
+        </div>
+
+        <details class="global-password">
+          <summary>[ USE ONE PASSWORD FOR ALL ENCRYPTED FILES ]</summary>
+          <label><span>DEFAULT STATEMENT PASSWORD</span><input type="password" name="password" autocomplete="off" placeholder="OPTIONAL"></label>
+        </details>
+
+        <div class="action-row">
+          <span id="system-status">SYSTEM STATUS: READY</span>
+          <button type="submit" id="import-button">&gt; VALIDATE AND IMPORT</button>
+        </div>
+      </form>
+    </section>
+
+    {% if results %}
+    <section class="results" id="results">
+      <div class="section-heading">
+        <h2>IMPORT REPORT</h2>
+        {% if batch_id %}<code>BATCH {{ batch_id }}</code>{% endif %}
+      </div>
+      {% for result in results %}
+      <article class="result {{ result.status }}">
+        <div class="result-heading">
+          <div><p class="file-name">{{ result.file }}</p>{% if result.status == 'success' %}<p>{{ result.bank }} // {{ result.table }}</p>{% endif %}</div>
+          <span class="status">{{ 'COMPLETE' if result.status == 'success' else ('NEEDS MAPPING' if result.status == 'needs_mapping' else 'IMPORT FAILED') }}</span>
+        </div>
+        {% if result.status == 'success' %}
+        <div class="metrics">
+          <div><strong>{{ result.parsed }}</strong><span>PARSED</span></div>
+          <div><strong>{{ result.inserted }}</strong><span>NEW ROWS</span></div>
+          <div><strong>{{ result.skipped }}</strong><span>DUPLICATES</span></div>
+        </div>
+        <dl>
+          <div><dt>ACCOUNT</dt><dd>{{ result.account_masked }}</dd></div>
+          <div><dt>STATEMENT PERIOD</dt><dd>{{ result.period }}</dd></div>
+          <div><dt>TRANSACTION DATES</dt><dd>{{ result.date_range }}</dd></div>
+        </dl>
+        <ul class="checks">{% for check in result.reconciliations %}<li>[OK] {{ check }}</li>{% endfor %}</ul>
+        {% if result.warnings %}<ul class="warnings">{% for warning in result.warnings %}<li>[WARN] {{ warning }}</li>{% endfor %}</ul>{% endif %}
+        {% elif result.status == 'needs_mapping' %}<p class="warning-message">[ACTION] {{ result.message }} <a href="{{ result.mapping_url }}">OPEN MAPPING TERMINAL</a></p>
+        {% else %}<p class="error-message">[ERROR] {{ result.message }}</p>{% endif %}
+      </article>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    <section class="terminal-panel totals">
+      <div class="panel-title"><span>02</span> POSTGRESQL TABLES</div>
+      <div class="table-counts">
+        {% for table, count in counts.items() %}<div><span>{{ table }}</span><strong>{{ '{:,}'.format(count) }}</strong></div>{% endfor %}
+      </div>
+      <p class="note">TIP: REFRESH THE PUBLIC SCHEMA IN DBEAVER AFTER IMPORT.</p>
+    </section>
+  </main>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

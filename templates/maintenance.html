@@ -1,0 +1,16 @@
+<!-- Created by Harsh (@harsh-91) | Made in India -->
+<!doctype html>
+<html lang="en" data-effects="on">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Safety // Statement Importer</title><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head>
+<body><div class="scanlines" aria-hidden="true"></div><main class="shell setup-shell">
+<nav class="topbar"><a class="brand" href="{{ url_for('index') }}">&lt; STATEMENT_IMPORTER</a><span class="system-light"><i></i> LOCAL ONLY</span></nav>
+<header class="hero"><p class="command">C:\BANK_DATA&gt; SAFETY.EXE</p><h1>BACKUP <span>+ ACCESS</span></h1><p class="intro">Verified local backups and a least-privilege PostgreSQL login for reporting tools.</p></header>
+{% if error %}<section class="result error"><p class="error-message">[ERROR] {{ error }}</p></section>{% endif %}
+{% if backup_created %}<section class="result success"><p>[OK] Verified backup created: <code>{{ backup_created }}</code></p></section>{% endif %}
+{% if reporting %}<section class="terminal-panel key-reveal"><div class="panel-title"><span>!</span> COPY REPORTING LOGIN NOW</div><div class="key-body"><code>HOST={{ reporting.host }} PORT={{ reporting.port }} DB={{ reporting.database }} USER={{ reporting.username }} PASSWORD={{ reporting.password }}</code><p>The password is not stored or shown again. This user can only read data.</p></div></section>{% endif %}
+<section class="service-grid">
+<article class="terminal-panel service-card"><div class="panel-title"><span>B</span> VERIFIED BACKUP</div><div class="service-body"><p>Create a PostgreSQL custom-format backup and verify its catalog before keeping it.</p><form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="backup"><button type="submit">CREATE BACKUP</button></form></div></article>
+<article class="terminal-panel service-card"><div class="panel-title"><span>R</span> REPORTING LOGIN</div><div class="service-body"><p>Create a random read-only login for DBeaver, Excel, Power BI, or Tableau. Administrator credentials are used once and never saved.</p><form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="reporting_user"><label><span>POSTGRES ADMIN USER</span><input name="admin_user" value="postgres" required autocomplete="username"></label><label><span>POSTGRES ADMIN PASSWORD</span><input type="password" name="admin_password" required autocomplete="new-password"></label><button type="submit">CREATE READ-ONLY USER</button></form></div></article>
+</section>
+<section class="terminal-panel"><div class="panel-title"><span>L</span> LOCAL BACKUPS</div><div class="credential-list">{% for backup in backups %}<div><span><strong>{{ backup.name }}</strong><small>{{ backup.created }} // {{ '{:,}'.format(backup.size) }} BYTES</small></span></div>{% else %}<p class="note">NO BACKUPS CREATED FROM THIS APP.</p>{% endfor %}</div><p class="note">Stored under your Windows Local AppData\StatementImporter\backups folder. Restore is intentionally not automated because it replaces database state.</p></section>
+</main></body></html>

@@ -1,0 +1,17 @@
+# Created by Harsh (@harsh-91) | Made in India
+.env
+.venv/
+__pycache__/
+*.pyc
+init/transactions.csv
+build/
+dist/
+*.spec
+setup-payload/
+*.backup
+*.log
+*.xlsx
+*.xls
+*.csv
+*.sqlite*
+pending/
