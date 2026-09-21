@@ -1,0 +1,27 @@
+# Created by Harsh (@harsh-91) | Made in India
+name: Feature request
+description: Suggest an improvement without sharing private financial data.
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: "Created by Harsh · Made in India 🇮🇳"
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+    validations:
+      required: true
+  - type: checkboxes
+    id: offline
+    attributes:
+      label: Design constraints
+      options:
+        - label: This proposal can preserve offline-first operation and safe local defaults.
