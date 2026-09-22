@@ -7,7 +7,9 @@ Offline-first Windows desktop application for reconciling bank statements into P
 
 ## Install
 
-Download `StatementImporter-1.3.5-Setup-x64.exe` from the repository's [latest release](https://github.com/harsh-91/statement-importer/releases/latest). The standard Windows wizard provides per-user installation, a bounded direct close of the prior app during upgrades, shortcut choices, Programs & Features registration, and a data-preserving uninstaller.
+Download `StatementImporter-1.4.0-Setup-x64.exe` from the repository's [latest release](https://github.com/harsh-91/statement-importer/releases/latest). Setup displays upgrade progress, checks that the old executable is released, and asks before forcibly closing a background copy. A failed check offers retry or cancellation. Finish imports and backups before updating.
+
+On first launch, choose **Set up storage and continue**. Live step messages and elapsed time stay visible while your local database is prepared. On success, the importer opens automatically. Advanced connection fields stay available after an error. Prerequisite downloads run in visible vendor windows; follow their prompts before returning to the app.
 
 This build targets supported 64-bit Intel/AMD editions of Windows 10 (build 17763+) and Windows 11. The setup checks the platform, PostgreSQL, and Microsoft Edge WebView2; PostgreSQL and WebView2 can be installed through winget or supplied manually.
 
@@ -83,7 +85,7 @@ Build the app and setup executable:
 .\build_windows.ps1
 ```
 
-When Inno Setup 6/7 or the project-local compiler is available, the build also produces the conventional `StatementImporter-1.3.5-Setup-x64.exe` installer from `installer\StatementImporter.iss`.
+When Inno Setup 6/7 or the project-local compiler is available, the build also produces the conventional `StatementImporter-1.4.0-Setup-x64.exe` installer from `installer\StatementImporter.iss`.
 
 See `IMPLEMENTATION_REPORT.md` for the full incremental implementation and test record.
 

@@ -313,6 +313,8 @@ def import_mapped_transactions(table_name: str, rows: list[dict[str, Any]], batc
 def ensure_schema(settings: dict[str, str] | None = None) -> None:
     with connect(settings) as connection:
         with connection.cursor() as cursor:
+            cursor.execute("SET LOCAL lock_timeout = '10s'")
+            cursor.execute("SET LOCAL statement_timeout = '120s'")
             _rename_legacy_tables(cursor)
             for statement in BASE_SCHEMA:
                 cursor.execute(statement)

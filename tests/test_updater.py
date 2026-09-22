@@ -51,6 +51,7 @@ class UpdateMetadataTests(unittest.TestCase):
             ],
         }
         with tempfile.TemporaryDirectory() as folder, \
+             patch.object(updater, "__version__", "1.3.5"), \
              patch.object(updater, "UPDATE_DIR", Path(folder)), \
              patch.object(updater, "CACHE_PATH", Path(folder) / "latest.json"), \
              patch.object(updater, "_open", return_value=response(json.dumps(release).encode())):

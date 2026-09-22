@@ -6,6 +6,7 @@ import ctypes
 from ctypes import wintypes
 import os
 import sys
+import json
 import webbrowser
 
 import webview
@@ -27,18 +28,31 @@ EVENT_MODIFY_STATE = 0x0002
 INFINITE = 0xFFFFFFFF
 
 
+def windows_api():
+    kernel32 = ctypes.windll.kernel32
+    kernel32.CreateMutexW.argtypes = (wintypes.LPVOID, wintypes.BOOL, wintypes.LPCWSTR)
+    kernel32.CreateMutexW.restype = wintypes.HANDLE
+    kernel32.SetEvent.argtypes = (wintypes.HANDLE,)
+    kernel32.SetEvent.restype = wintypes.BOOL
+    kernel32.CloseHandle.argtypes = (wintypes.HANDLE,)
+    kernel32.CloseHandle.restype = wintypes.BOOL
+    kernel32.WaitForSingleObject.argtypes = (wintypes.HANDLE, wintypes.DWORD)
+    kernel32.WaitForSingleObject.restype = wintypes.DWORD
+    return kernel32
+
+
 def acquire_single_instance() -> bool:
     global _mutex_handle
     if not hasattr(ctypes, "windll"):
         return True
-    _mutex_handle = ctypes.windll.kernel32.CreateMutexW(None, False, "Local\\StatementImporterDesktop")
+    _mutex_handle = windows_api().CreateMutexW(None, False, "Local\\StatementImporterDesktop")
     return bool(_mutex_handle) and ctypes.windll.kernel32.GetLastError() != 183
 
 
 def signal_running_instance_shutdown() -> bool:
     if not hasattr(ctypes, "windll"):
         return False
-    kernel32 = ctypes.windll.kernel32
+    kernel32 = windows_api()
     kernel32.OpenEventW.argtypes = (wintypes.DWORD, wintypes.BOOL, wintypes.LPCWSTR)
     kernel32.OpenEventW.restype = wintypes.HANDLE
     handle = kernel32.OpenEventW(EVENT_MODIFY_STATE, False, SHUTDOWN_EVENT_NAME)
@@ -54,7 +68,7 @@ def start_shutdown_listener(server: "LocalServer") -> None:
     global _shutdown_event_handle
     if not hasattr(ctypes, "windll"):
         return
-    kernel32 = ctypes.windll.kernel32
+    kernel32 = windows_api()
     kernel32.CreateEventW.argtypes = (wintypes.LPVOID, wintypes.BOOL, wintypes.BOOL, wintypes.LPCWSTR)
     kernel32.CreateEventW.restype = wintypes.HANDLE
     _shutdown_event_handle = kernel32.CreateEventW(None, True, False, SHUTDOWN_EVENT_NAME)
@@ -62,7 +76,8 @@ def start_shutdown_listener(server: "LocalServer") -> None:
         return
 
     def wait_for_installer() -> None:
-        kernel32.WaitForSingleObject(_shutdown_event_handle, INFINITE)
+        if kernel32.WaitForSingleObject(_shutdown_event_handle, INFINITE) != 0:
+            return
         server.stop()
         os._exit(0)
 
@@ -89,34 +104,40 @@ def main():
     if not acquire_single_instance():
         webbrowser.open("http://127.0.0.1:8765")
         return
-    try:
-        start_managed_postgres_if_present()
-    except LocalPostgresError:
-        pass
-    database_ready = False
-    try:
-        ensure_schema()
-        database_ready = True
-    except (ConfigError, psycopg.Error):
-        pass
-    if database_ready:
-        try:
-            start_background_check(bool(get_setting("automatic_update_checks", False)))
-        except (ConfigError, psycopg.Error):
-            pass
     server = LocalServer()
     server.start()
     start_shutdown_listener(server)
     try:
-        webview.create_window(
+        window = webview.create_window(
             "Statement Importer",
-            "http://127.0.0.1:8765",
+            html='''<!doctype html><html><body style="background:#101524;color:#bafbe0;font:20px monospace;padding:48px">
+                <h1>Statement Importer</h1><p id="stage">Opening your workspace...</p>
+                <progress></progress><p id="elapsed">Starting...</p>
+                <p>Your database may take a minute to start.</p>
+                <script>let seconds=0;setInterval(()=>document.getElementById('elapsed').textContent=
+                'Elapsed: '+(++seconds)+' seconds',1000);</script></body></html>''',
             width=1020,
             height=820,
             min_size=(760, 620),
             background_color="#f4f6f8",
         )
-        webview.start()
+        def initialize():
+            def show(message):
+                try:
+                    window.evaluate_js('document.getElementById("stage").textContent=' + json.dumps(message))
+                except Exception:
+                    pass
+            try:
+                show("Starting your local database...")
+                start_managed_postgres_if_present()
+                show("Checking your database and tables...")
+                ensure_schema()
+                start_background_check(bool(get_setting("automatic_update_checks", False)))
+                window.load_url("http://127.0.0.1:8765/")
+            except Exception:
+                app.config["STARTUP_ERROR"] = "Your database is not ready yet. Choose local storage below, or check your existing server settings."
+                window.load_url("http://127.0.0.1:8765/setup")
+        webview.start(initialize)
     finally:
         server.stop()
 

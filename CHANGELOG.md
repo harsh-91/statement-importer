@@ -3,6 +3,15 @@
 
 Created by Harsh · Made in India 🇮🇳
 
+## 1.4.0 - 2026-09-22
+
+- Replaced unverified, name-wide process termination with an exact-installation-path helper and an exclusive file-release check.
+- Added normal close, explicit consent for force-close, elapsed progress, and bounded failure recovery.
+- Added visible desktop startup and live database setup stages with duplicate-operation protection.
+- Added schema lock and statement timeouts and actionable setup errors.
+- Clarified navigation and first-import instructions; prerequisite installers now show their own progress.
+- Added Windows integration coverage for a running app, same-name unrelated process isolation, and real installer refusal/retry.
+
 ## 1.3.5 - 2026-09-21
 
 - Fixed setup remaining indefinitely on “Preparing to Install” while waiting for an older one-file application launcher to exit.

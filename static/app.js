@@ -29,12 +29,48 @@
   });
 
   document.querySelectorAll('[data-setup-form]').forEach((setupForm) => {
-    setupForm.addEventListener('submit', () => {
-      const button = setupForm.querySelector('button[type="submit"]');
-      if (button) {
-        button.disabled = true;
-        button.dataset.originalText = button.textContent;
-        button.textContent = '> CONNECTING... MAX 5 SECONDS';
+    setupForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const panel = document.getElementById('setup-progress');
+      const error = document.getElementById('setup-error');
+      const buttons = document.querySelectorAll('[data-setup-form] button[type="submit"]');
+      const started = Date.now();
+      panel.hidden = false;
+      panel.querySelector('progress').hidden = false;
+      panel.setAttribute('aria-busy', 'true');
+      error.hidden = true;
+      buttons.forEach(button => { button.disabled = true; });
+      const timer = setInterval(() => {
+        const seconds = Math.floor((Date.now() - started) / 1000);
+        document.getElementById('setup-elapsed').textContent = `Elapsed: ${seconds} seconds`;
+        if (seconds > 120) document.getElementById('setup-help').textContent = 'This is taking longer than usual. The step above is still running. Keep this window open; do not start another setup.';
+      }, 1000);
+      let polling = true;
+      const poll = async () => {
+        try {
+          const response = await fetch('/setup/progress', {signal: AbortSignal.timeout(5000)});
+          if (response.ok) {
+            const status = await response.json();
+            document.getElementById('setup-stage').textContent = status.message;
+          }
+        } catch { /* The setup POST remains authoritative if a status poll fails. */ }
+        if (polling) setTimeout(poll, 1000);
+      };
+      poll();
+      try {
+        const response = await fetch('/setup', {method: 'POST', body: new FormData(setupForm), headers: {'X-Setup-Request': '1'}});
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Setup could not finish. Review your settings and retry.');
+        window.location.assign(result.next);
+      } catch (failure) {
+        error.textContent = `${failure.message} Your settings remain available below. If the connection to the app was lost, reload to check whether setup is still running before retrying.`;
+        error.hidden = false;
+        buttons.forEach(button => { button.disabled = false; });
+      } finally {
+        polling = false;
+        clearInterval(timer);
+        panel.setAttribute('aria-busy', 'false');
+        panel.querySelector('progress').hidden = true;
       }
     });
   });

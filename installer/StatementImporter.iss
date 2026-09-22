@@ -1,6 +1,6 @@
 ; Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0
 #define MyAppName "Statement Importer"
-#define MyAppVersion "1.3.5"
+#define MyAppVersion "1.4.0"
 #define MyAppPublisher "Harsh"
 #define MyAppExeName "StatementImporter.exe"
 
@@ -24,14 +24,19 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0.17763
 OutputDir=..\dist
-OutputBaseFilename=StatementImporter-1.3.5-Setup-x64
+OutputBaseFilename=StatementImporter-1.4.0-Setup-x64
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
 SetupLogging=yes
 CloseApplications=no
 RestartApplications=no
+#ifdef TEST_BUILD
+Uninstallable=no
+CreateUninstallRegKey=no
+#else
 Uninstallable=yes
+#endif
 UninstallDisplayName={#MyAppName} {#MyAppVersion}
 UninstallDisplayIcon={app}\{#MyAppExeName}
 ChangesAssociations=no
@@ -46,6 +51,7 @@ Name: "postgres"; Description: "Download and run PostgreSQL 17 installer with wi
 Name: "webview"; Description: "Download Microsoft Edge WebView2 Runtime with winget"; GroupDescription: "Missing prerequisites (internet required):"; Check: ShouldOfferWebView2
 
 [Files]
+Source: "close-installed-app.ps1"; Flags: dontcopy
 Source: "..\dist\StatementImporter.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\QUICK_START.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\README.md"; DestDir: "{app}"; Flags: ignoreversion
@@ -55,13 +61,15 @@ Source: "..\IMPLEMENTATION_REPORT.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\requirements-lock.txt"; DestDir: "{app}"; DestName: "DEPENDENCY_MANIFEST.txt"; Flags: ignoreversion
 
 [Icons]
+#ifndef TEST_BUILD
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"
 Name: "{group}\Quick Start"; Filename: "{app}\QUICK_START.txt"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Tasks: desktopicon
+#endif
 
 [Run]
-Filename: "{code:GetWingetPath}"; Parameters: "install --exact --id PostgreSQL.PostgreSQL.17 --source winget --silent --accept-package-agreements --accept-source-agreements"; Description: "Install PostgreSQL 17"; Tasks: postgres; Flags: waituntilterminated; Check: WingetAvailable
-Filename: "{code:GetWingetPath}"; Parameters: "install --exact --id Microsoft.EdgeWebView2Runtime --source winget --silent --accept-package-agreements --accept-source-agreements"; Description: "Install Microsoft Edge WebView2 Runtime"; Tasks: webview; Flags: waituntilterminated; Check: WingetAvailable
+Filename: "{code:GetWingetPath}"; Parameters: "install --exact --id PostgreSQL.PostgreSQL.17 --source winget --accept-package-agreements --accept-source-agreements"; Description: "Install PostgreSQL 17"; StatusMsg: "Installing database tools. Follow the PostgreSQL installer in the other window; download progress appears there."; Tasks: postgres; Flags: waituntilterminated; Check: WingetAvailable
+Filename: "{code:GetWingetPath}"; Parameters: "install --exact --id Microsoft.EdgeWebView2Runtime --source winget --accept-package-agreements --accept-source-agreements"; Description: "Install Microsoft Edge WebView2 Runtime"; StatusMsg: "Installing the display runtime. Download and installation progress appear in the other window."; Tasks: webview; Flags: waituntilterminated; Check: WingetAvailable
 Filename: "{app}\{#MyAppExeName}"; Description: "Launch {#MyAppName}"; Flags: nowait postinstall skipifsilent
 
 [UninstallDelete]
@@ -70,31 +78,68 @@ Filename: "{app}\{#MyAppExeName}"; Description: "Launch {#MyAppName}"; Flags: no
 [Code]
 var
   PrerequisitePage: TOutputMsgMemoWizardPage;
+  UpgradeProgress: TOutputProgressWizardPage;
+  CloseAttempt: Integer;
 
-function StopRunningStatementImporter: Boolean;
+function CloseInstalledApp(Force: Boolean): String;
 var
-  ResultCode: Integer;
-  ExistingApp, TaskkillPath: String;
+  ResultCode, Tick: Integer;
+  ResultPath, Arguments, Status: String;
+  StatusText: AnsiString;
 begin
-  Result := True;
-  ExistingApp := ExpandConstant('{app}\StatementImporter.exe');
-  if FileExists(ExistingApp) then
-  begin
-    { Do not wait on the prior executable. Some old one-file builds can keep the
-      launcher alive indefinitely. Issue the close asynchronously, then wait only
-      a short bounded interval for Windows to release the installed file. }
-    TaskkillPath := ExpandConstant('{sys}\taskkill.exe');
-    if FileExists(TaskkillPath) then
-      Exec(TaskkillPath, '/IM StatementImporter.exe /T /F', '', SW_HIDE, ewNoWait, ResultCode);
-    Sleep(2000);
+  Result := 'error';
+  CloseAttempt := CloseAttempt + 1;
+  ResultPath := ExpandConstant('{tmp}\close-result-') + IntToStr(CloseAttempt) + '.txt';
+  if not FileExists(ExpandConstant('{tmp}\close-installed-app.ps1')) then
+    ExtractTemporaryFile('close-installed-app.ps1');
+  Arguments := '-NoProfile -NonInteractive -ExecutionPolicy Bypass -File "' +
+    ExpandConstant('{tmp}\close-installed-app.ps1') + '" -Executable "' +
+    ExpandConstant('{app}\StatementImporter.exe') + '" -ResultPath "' + ResultPath + '"';
+  if Force then Arguments := Arguments + ' -Force';
+  UpgradeProgress.Show;
+  try
+    if Force then Status := 'Closing the previous version with your permission'
+    else Status := 'Asking the previous version to close';
+    UpgradeProgress.SetText(Status, 'Checking that the application file is released...');
+    if not Exec(ExpandConstant('{sys}\WindowsPowerShell\v1.0\powershell.exe'),
+      Arguments, '', SW_HIDE, ewNoWait, ResultCode) then exit;
+    for Tick := 0 to 199 do
+    begin
+      UpgradeProgress.SetText(Status, 'Elapsed: ' + IntToStr(Tick div 10) +
+        ' seconds. This check stops after 20 seconds.');
+      UpgradeProgress.SetProgress(Tick, 200);
+      if LoadStringFromFile(ResultPath, StatusText) and (Length(StatusText) > 0) then
+      begin
+        Result := String(StatusText);
+        Log('Upgrade file-release check: ' + Result);
+        exit;
+      end;
+      Sleep(100);
+    end;
+    Result := 'timeout';
+    Log('Upgrade helper timed out; file replacement was blocked.');
+  finally
+    UpgradeProgress.Hide;
   end;
 end;
 
 function PrepareToInstall(var NeedsRestart: Boolean): String;
+var
+  Status: String;
 begin
   Result := '';
-  if not StopRunningStatementImporter then
-    Result := 'Statement Importer is still running. Close it from Task Manager, then choose Try again.';
+  if not FileExists(ExpandConstant('{app}\StatementImporter.exe')) then exit;
+  Status := CloseInstalledApp(False);
+  if Status = 'ready' then exit;
+  if (Status = 'busy') and (not WizardSilent) then
+    if MsgBox('The previous version is still running in the background.' + #13#10 + #13#10 +
+      'Finish any import or backup first. May Setup close this installed copy now?' + #13#10 +
+      'An unfinished operation may be interrupted.', mbConfirmation, MB_YESNO) = IDYES then
+      Status := CloseInstalledApp(True);
+  if Status <> 'ready' then
+    Result := 'The previous application has not released its files. No files were replaced.' + #13#10 +
+      'Finish any ongoing work and click Try again. If the old application has no window, ' +
+      'restart Windows and run Setup again. You can cancel safely.';
 end;
 
 function HasPostgreSQL: Boolean;
@@ -137,6 +182,8 @@ procedure InitializeWizard;
 var
   Report: String;
 begin
+  UpgradeProgress := CreateOutputProgressPage('Preparing your update',
+    'Closing the previous version and checking its files');
   Report := 'SYSTEM CHECK' + #13#10 + #13#10;
   if HasPostgreSQL then
     Report := Report + '[READY] PostgreSQL detected' + #13#10

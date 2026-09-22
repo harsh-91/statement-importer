@@ -14,12 +14,12 @@
       <a class="brand" href="{{ url_for('index') }}">STATEMENT_IMPORTER<span class="cursor">_</span></a>
       <div class="nav-actions">
         <span class="system-light"><i></i> DB ONLINE</span>
-        <a href="{{ url_for('transaction_browser') }}">[ DATA ]</a>
-        <a href="{{ url_for('import_history') }}">[ HISTORY ]</a>
+        <a href="{{ url_for('transaction_browser') }}">[ TRANSACTIONS ]</a>
+        <a href="{{ url_for('import_history') }}">[ IMPORT HISTORY ]</a>
         <a href="{{ url_for('access_settings') }}">[ API / MCP ]</a>
         <a href="{{ url_for('updates') }}">[ UPDATES ]</a>
-        <a href="{{ url_for('maintenance') }}">[ SAFETY ]</a>
-        <a href="{{ url_for('setup_database') }}">[ DATABASE ]</a>
+        <a href="{{ url_for('maintenance') }}">[ BACKUPS & ACCESS ]</a>
+        <a href="{{ url_for('setup_database') }}">[ DATABASE SETTINGS ]</a>
         <button type="button" class="text-button" id="effects-toggle">[ FX: ON ]</button>
       </div>
     </nav>
@@ -28,6 +28,7 @@
       <p class="command">C:\BANK_DATA&gt; IMPORT.EXE</p>
       <h1>IMPORT STATEMENTS.<br><span>SKIP DUPLICATES.</span></h1>
       <p class="intro">Local reconciliation terminal for SBI, ICICI Bank, and IndusInd Bank. Files and passwords stay on this machine.</p>
+      <p class="intro">1. Choose your statements. 2. Enter passwords only for locked files. 3. Import and review the results below. Previously imported transactions are skipped.</p>
     </header>
 
     {% if update %}

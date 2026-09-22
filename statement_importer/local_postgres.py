@@ -73,13 +73,16 @@ def choose_port(start: int = DEFAULT_PORT, attempts: int = 31) -> int:
 
 
 def _run(command: list[str], *, timeout: int = 120) -> subprocess.CompletedProcess[str]:
-    result = subprocess.run(
-        command,
-        capture_output=True,
-        text=True,
-        timeout=timeout,
-        creationflags=HIDDEN_PROCESS,
-    )
+    try:
+        result = subprocess.run(
+            command, capture_output=True, text=True, timeout=timeout,
+            creationflags=HIDDEN_PROCESS,
+        )
+    except subprocess.TimeoutExpired as error:
+        raise LocalPostgresError(
+            f"PostgreSQL did not finish this step within {timeout} seconds. "
+            "You can retry setup. Existing data has been preserved."
+        ) from error
     if result.returncode != 0:
         message = (result.stderr or result.stdout or "PostgreSQL command failed").strip()
         raise LocalPostgresError(message)
@@ -132,6 +135,7 @@ def _start(bin_dir: Path, port: int) -> None:
         capture_output=True,
         text=True,
         creationflags=HIDDEN_PROCESS,
+        timeout=10,
     )
     if status.returncode == 0:
         return
@@ -202,14 +206,17 @@ def _create_application_database(port: int, owner_password: str, app_password: s
                 )
 
 
-def provision_managed_postgres() -> dict[str, str]:
+def provision_managed_postgres(progress=lambda message: None) -> dict[str, str]:
+    progress("Checking your local database configuration")
     metadata = _metadata()
     if metadata:
         bin_dir = Path(metadata["bin_dir"])
         if not (bin_dir / "pg_ctl.exe").exists():
             bin_dir = find_postgres_bin()
         port = int(metadata["port"])
+        progress("Starting your existing local database (up to 60 seconds)")
         _start(bin_dir, port)
+        progress("Checking database access and preparing tables")
         _create_application_database(port, metadata["owner_password"], metadata["app_password"])
         settings = _settings(str(port), metadata["app_password"])
         test_connection(settings)
@@ -217,14 +224,18 @@ def provision_managed_postgres() -> dict[str, str]:
         save_settings(settings)
         return settings
 
+    progress("Finding PostgreSQL tools")
     bin_dir = find_postgres_bin()
     port = choose_port()
     owner_password = secrets.token_urlsafe(32)
     app_password = secrets.token_urlsafe(32)
+    progress("Creating local database storage (up to 120 seconds)")
     _initialize(bin_dir, port, owner_password)
     _save_metadata(bin_dir, port, owner_password, app_password)
+    progress("Starting your local database (up to 60 seconds)")
     _start(bin_dir, port)
     try:
+        progress("Preparing database access and transaction tables")
         _create_application_database(port, owner_password, app_password)
         settings = _settings(str(port), app_password)
         ensure_schema(settings)

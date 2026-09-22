@@ -39,3 +39,6 @@ input[type="password"],input[type="text"],input[type="number"],input:not([type])
 @media (max-width:760px) { .topbar,.action-row,.result-heading { align-items:flex-start; flex-direction:column; }.nav-actions { flex-wrap:wrap; }.dashboard,.service-grid { grid-template-columns:1fr 1fr; }.queued-file { grid-template-columns:1fr; }.metrics { grid-template-columns:1fr; }.form-grid { grid-template-columns:1fr; }dl div { grid-template-columns:1fr; gap:2px; } }
 @media (max-width:560px) { .dashboard,.service-grid { grid-template-columns:1fr; } }
 @media (max-width:900px) { .filter-grid { grid-template-columns:1fr 1fr; } }
+[hidden] { display:none!important; }
+#setup-progress { padding:22px; }
+#setup-progress progress { width:100%; accent-color:var(--cyan); }

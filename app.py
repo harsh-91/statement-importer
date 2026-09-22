@@ -7,6 +7,7 @@ import io
 import secrets
 import sys
 import threading
+import subprocess
 import webbrowser
 from pathlib import Path
 
@@ -60,6 +61,8 @@ app.config.update(
 )
 app.secret_key = secrets.token_bytes(32)
 app.register_blueprint(api)
+setup_lock = threading.Lock()
+setup_progress = {"owner": None, "running": False, "message": "Ready to set up storage"}
 
 
 @app.before_request
@@ -92,7 +95,7 @@ def verify_csrf() -> None:
 def friendly_database_error(exception: Exception) -> str:
     detail = str(exception).strip().splitlines()[0] if str(exception).strip() else "No response from PostgreSQL"
     return (
-        "Could not connect to that PostgreSQL database within 5 seconds. "
+        "Could not connect to or prepare that PostgreSQL database. Each connection attempt must respond within 5 seconds. "
         "Check the host, port, database name, username, password, server status, and firewall. "
         f"Details: {detail}"
     )
@@ -123,40 +126,76 @@ def index():
 @app.route("/setup", methods=["GET", "POST"])
 def setup_database():
     fields = saved_connection_fields()
-    error = None
+    error = app.config.get("STARTUP_ERROR")
     success = request.args.get("saved") == "1"
     if request.method == "POST":
         verify_csrf()
-        if request.form.get("mode") == "automatic":
-            try:
-                provision_managed_postgres()
-                return redirect(url_for("setup_database", saved=1))
-            except (LocalPostgresError, ConfigError, OSError, psycopg.Error) as exception:
-                error = str(exception)
-                return render_template("setup.html", fields=fields, error=error, success=success)
-        settings = {
-            "POSTGRES_HOST": request.form.get("host", "").strip(),
-            "POSTGRES_PORT": request.form.get("port", "").strip(),
-            "POSTGRES_DB": request.form.get("database", "").strip(),
-            "POSTGRES_USER": request.form.get("user", "").strip(),
-            "POSTGRES_PASSWORD": request.form.get("password", ""),
-        }
-        fields = settings
+        if not setup_lock.acquire(blocking=False):
+            if request.headers.get("X-Setup-Request") == "1":
+                return jsonify(error="Database setup is already running. Wait for it to finish."), 409
+            return render_template("setup.html", fields=fields, error="Database setup is already running.", success=False), 409
         try:
-            if not all(settings.values()):
-                raise ConfigError("Complete every connection field")
-            port = int(settings["POSTGRES_PORT"])
-            if not 1 <= port <= 65535:
-                raise ConfigError("PostgreSQL port must be between 1 and 65535")
-            provision_database(settings)
-            ensure_fingerprint_schema(settings)
-            save_settings(settings)
-            return redirect(url_for("setup_database", saved=1))
-        except psycopg.Error as exception:
-            error = friendly_database_error(exception)
-        except (ConfigError, ValueError) as exception:
-            error = str(exception)
+            setup_progress.update(owner=session.get("csrf_token"), running=True, message="Checking database settings")
+            return perform_setup(fields)
+        finally:
+            setup_progress["running"] = False
+            setup_lock.release()
     return render_template("setup.html", fields=fields, error=error, success=success)
+
+
+@app.get("/setup/progress")
+def setup_status():
+    if not session.get("csrf_token") or setup_progress["owner"] != session.get("csrf_token"):
+        return jsonify(running=False, message="Waiting for setup to start")
+    return jsonify(running=setup_progress["running"], message=setup_progress["message"])
+
+
+def perform_setup(fields):
+    def progress(message):
+        setup_progress["message"] = message
+
+    def finished(error=None):
+        if not error:
+            app.config.pop("STARTUP_ERROR", None)
+        if request.headers.get("X-Setup-Request") == "1":
+            return (jsonify(error=error), 400) if error else jsonify(next=url_for("index"))
+        if not error:
+            return redirect(url_for("setup_database", saved=1))
+        return render_template("setup.html", fields=fields, error=error, success=False)
+
+    if request.form.get("mode") == "automatic":
+        try:
+            provision_managed_postgres(progress=progress)
+            return finished()
+        except subprocess.TimeoutExpired:
+            return finished("PostgreSQL did not respond in time. Retry setup after checking that PostgreSQL is installed.")
+        except (RuntimeError, ConfigError, OSError, psycopg.Error) as exception:
+            return finished(str(exception))
+    settings = {
+        "POSTGRES_HOST": request.form.get("host", "").strip(),
+        "POSTGRES_PORT": request.form.get("port", "").strip(),
+        "POSTGRES_DB": request.form.get("database", "").strip(),
+        "POSTGRES_USER": request.form.get("user", "").strip(),
+        "POSTGRES_PASSWORD": request.form.get("password", ""),
+    }
+    fields = settings
+    try:
+        if not all(settings.values()):
+            raise ConfigError("Complete every connection field")
+        port = int(settings["POSTGRES_PORT"])
+        if not 1 <= port <= 65535:
+            raise ConfigError("PostgreSQL port must be between 1 and 65535")
+        progress("Connecting to your database and checking access")
+        provision_database(settings)
+        progress("Preparing transaction tables")
+        ensure_fingerprint_schema(settings)
+        save_settings(settings)
+        return finished()
+    except psycopg.Error as exception:
+        error = friendly_database_error(exception)
+    except (ConfigError, ValueError, RuntimeError, OSError) as exception:
+        error = str(exception)
+    return finished(error)
 
 
 @app.post("/import")

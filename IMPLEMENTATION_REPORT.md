@@ -199,3 +199,24 @@ The project is suitable for personal use and controlled beta evaluation. It is n
 - Inno Setup 6.7.3 installer compile: passed; product version verified as 1.3.5.
 - SHA-256: the exact installer digest is published in `SHA256SUMS.txt`.
 - The new targeted close was not run against the user's active installation during verification, so no user process or data was disturbed.
+
+## 15. Verified upgrades and visible onboarding (v1.4.0, 2026-09-22)
+
+Earlier 1.3.x checks did not exercise the actual installer with a running executable. The fixed-delay/name-wide shutdown approach did not establish that files were released. Those records must not be interpreted as proof that all upgrade hangs were resolved.
+
+- Replaced name-wide taskkill with exact-path process matching, normal window closure, and user-confirmed force closure.
+- Each installer close check shows elapsed time, returns within a 20-second polling budget, and requires an exclusive executable-open check before allowing replacement. Failure blocks installation and offers retry/cancel or a restart fallback.
+- Added an isolated compiler test mode without shortcuts or uninstall registration. The test installer blocks on a real running fixture process without changing its binary, then succeeds after closure and installs a byte-identical packaged executable.
+- Added visible desktop startup and corrected Windows handle argument types and failed-wait handling.
+- Database setup reports actual stages and elapsed time, rejects simultaneous setup attempts, restores controls on error, and opens the importer on success. The first-run page and navigation use clearer action labels.
+- Database status subprocesses now have time limits; schema operations have a 10-second lock timeout and a 120-second per-statement timeout.
+- Optional third-party prerequisite installation displays vendor/download windows and explains where to follow progress.
+
+### Verification
+
+- All 28 tests passed with RUN_INSTALLER_TEST=1, including the compiled installer test, exact-path force-close isolation, live progress, session separation, duplicate prevention, and failure recovery.
+- Browser interaction test passed: progress/elapsed display, disabled duplicate submission, failure and retry, successful navigation, and no JavaScript errors. Screenshot reviewed at 1020px width.
+- PyInstaller Windows application build passed. Production installer is compiled separately without TEST_BUILD.
+- Tests use disposable fixture processes and installation folders; they do not terminate the user's installed app or change the user's financial database.
+- Verification was performed on this Windows 11 host. A clean Windows 10/11 machine matrix, corporate PowerShell restrictions, and third-party prerequisite download failures remain additional compatibility work; this is not a universal compatibility certification.
+- Published artifacts remain unsigned until trusted signing is available; SHA256SUMS.txt is authoritative for the release digest.
