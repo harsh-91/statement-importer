@@ -234,7 +234,7 @@ Earlier 1.3.x checks did not exercise the actual installer with a running execut
 - Python compilation passed for the application, desktop entry point, diagnostics module and tests.
 - All 33 unit tests passed, including redaction, report contents, CSRF-protected report creation, setup-failure logging and email-draft path privacy.
 - Both compiled-installer integration tests passed: the installer refused replacement while a target executable was busy, preserved an unrelated same-name process, and completed after safe release.
-- Hardened the consented close helper to wait for the exact target process tree to exit; the bounded check remains below the installer's 20-second outer timeout.
+- Hardened the consented close helper with canonical Windows path comparison, a Win32 process-information fallback and a wait for the exact target process tree to exit; the bounded check remains below the installer's 20-second outer timeout.
 - Browser checks passed at 320, 390, 760 and 1100 pixel widths with no horizontal overflow or JavaScript errors.
 - The diagnostics and setup troubleshooting screens were visually reviewed on Windows 11.
 - Raw PostgreSQL logs were intentionally excluded because they can contain user, database or statement-related identifiers.

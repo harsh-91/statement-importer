@@ -10,7 +10,7 @@ Created by Harsh · Made in India 🇮🇳
 - Added one-click creation of a reviewable diagnostic ZIP with no statements, transactions, database contents, passwords, API keys, protected settings or PostgreSQL log contents.
 - Added a guided support-email draft that opens the report folder; attachment and sending always require explicit user action.
 - Added direct Diagnostics links on the setup failure screen and main navigation.
-- Made consented upgrade shutdown wait for the exact target process tree to exit, reducing false busy results on slower Windows hosts.
+- Made consented upgrade shutdown normalize Windows paths, use a process-information fallback and wait for the exact target process tree to exit, reducing false busy results on slower hosts while preserving same-name process isolation.
 
 ## 1.4.0 - 2026-09-22
 
