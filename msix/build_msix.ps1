@@ -2,7 +2,7 @@
 [CmdletBinding()]
 param(
     [string]$IdentityName = $(if ($env:MSIX_IDENTITY_NAME) { $env:MSIX_IDENTITY_NAME } else { 'HarshNair.NeonLedger' }),
-    [string]$Publisher = $(if ($env:MSIX_PUBLISHER) { $env:MSIX_PUBLISHER } else { 'CN=Harsh Nair' }),
+    [string]$Publisher = $(if ($env:MSIX_PUBLISHER) { $env:MSIX_PUBLISHER } else { 'CN=2AD2CE84-2334-4A3E-AFF4-2D43D2936CB8' }),
     [string]$PostgresArchive,
     [switch]$SkipAppBuild
 )

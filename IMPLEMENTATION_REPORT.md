@@ -257,3 +257,10 @@ Earlier 1.3.x checks did not exercise the actual installer with a running execut
 - Python compilation, PowerShell parsing and Appx manifest XML parsing passed.
 - The PyInstaller onedir payload completed successfully and its non-UI `--shutdown` smoke path exited with code 0.
 - A production-trusted package cannot be generated locally: Microsoft applies the trusted signature only after Partner Center submission and certification. Final Store identity validation and Windows clean-machine installation remain release-gate checks.
+
+### Partner Center reservation
+
+- Individual developer enrollment and Microsoft identity verification completed on 2026-09-25.
+- **Neon Ledger** reserved as a draft MSIX app with Store ID `9NDGSCG87PVT`.
+- Package identity confirmed directly in Partner Center: name `HarshNair.NeonLedger`, publisher `CN=2AD2CE84-2334-4A3E-AFF4-2D43D2936CB8`, and display name `Harsh Nair`.
+- These values were added to the MSIX build defaults. A Store submission and certification have not yet occurred.

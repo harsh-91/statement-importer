@@ -5,13 +5,20 @@ This directory builds the Store submission package. Microsoft signs the accepted
 
 ## One-time Partner Center setup
 
-1. Register an individual Microsoft Store developer account.
-2. Reserve the app name **Neon Ledger**.
-3. Copy the exact **Package/Identity/Name** and **Package/Identity/Publisher** values from Partner Center.
-4. Add them as GitHub repository variables named `MSIX_IDENTITY_NAME` and `MSIX_PUBLISHER`.
-5. Run the **Build Microsoft Store MSIX** workflow and submit its `.msix` artifact through Partner Center.
+1. Individual Microsoft Store developer account: created and verified.
+2. App name **Neon Ledger**: reserved as a draft MSIX app.
+3. Run the **Build Microsoft Store MSIX** workflow and submit its `.msix` artifact through Partner Center.
 
-The defaults are development placeholders and will not be accepted as a production Store identity unless they exactly match Partner Center.
+The build defaults now match the Store's exact identity values:
+
+| Partner Center field | Value |
+| --- | --- |
+| Package/Identity/Name | `HarshNair.NeonLedger` |
+| Package/Identity/Publisher | `CN=2AD2CE84-2334-4A3E-AFF4-2D43D2936CB8` |
+| Package/Properties/PublisherDisplayName | `Harsh Nair` |
+| Store ID | `9NDGSCG87PVT` |
+
+If Partner Center ever changes these values, use the `MSIX_IDENTITY_NAME` and `MSIX_PUBLISHER` GitHub repository variables to override the build defaults.
 
 ## What the package contains
 
@@ -25,7 +32,7 @@ The defaults are development placeholders and will not be accepted as a producti
 Install the Windows SDK and the locked Python build dependencies, then run:
 
 ```powershell
-.\msix\build_msix.ps1 -IdentityName 'YOUR_PARTNER_CENTER_NAME' -Publisher 'YOUR_PARTNER_CENTER_PUBLISHER'
+.\msix\build_msix.ps1
 ```
 
 The build downloads the pinned PostgreSQL archive only when it is absent from `.cache`. Core application use remains offline.
