@@ -264,3 +264,12 @@ Earlier 1.3.x checks did not exercise the actual installer with a running execut
 - **Neon Ledger** reserved as a draft MSIX app with Store ID `9NDGSCG87PVT`.
 - Package identity confirmed directly in Partner Center: name `HarshNair.NeonLedger`, publisher `CN=2AD2CE84-2334-4A3E-AFF4-2D43D2936CB8`, and display name `Harsh Nair`.
 - These values were added to the MSIX build defaults. A Store submission and certification have not yet occurred.
+
+### First Store package build and submission draft
+
+- Added a path-scoped `main` push trigger to the Store MSIX workflow; manual dispatch and version-tag builds remain available.
+- GitHub Actions run [36161828030](https://github.com/harsh-91/statement-importer/actions/runs/36161828030) succeeded on 2026-09-25 for commit `45315ec`. It built the x64 desktop payload, verified and bundled the pinned PostgreSQL archive, packed the unsigned MSIX, generated its SHA-256 sidecar, and uploaded the `neon-ledger-msix` artifact (384 MB).
+- The only job annotation is a non-blocking GitHub Actions Node.js 20 deprecation warning for `actions/cache@v4` and `actions/upload-artifact@v4`.
+- The downloaded GitHub artifact ZIP matched its published SHA-256 digest `D3ADBF29F833FCF7FAC319CFAE77574893C1E5C408887FCD98559F580EDAC900`. The contained MSIX matched its sidecar SHA-256 `298A7703C47F752EA987B83D0EFBA2E61F13BDA141E8D75CA3CE510B5DB97AE1`, and its manifest contained the reserved identity, version `1.6.0.0`, x64 architecture, application executable and bundled PostgreSQL server.
+- Partner Center submission 1 was started as a draft. The MSIX was uploaded and the Packages section became **Complete**, targeted only to Windows 10/11 Desktop. Partner Center warned that the `runFullTrust` restricted capability requires approval during certification.
+- Pricing and availability, properties (including a privacy policy), age ratings, and the Store listing remain incomplete. The app has not been submitted for certification or published.

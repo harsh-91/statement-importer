@@ -7,7 +7,7 @@ This directory builds the Store submission package. Microsoft signs the accepted
 
 1. Individual Microsoft Store developer account: created and verified.
 2. App name **Neon Ledger**: reserved as a draft MSIX app.
-3. Run the **Build Microsoft Store MSIX** workflow and submit its `.msix` artifact through Partner Center.
+3. The **Build Microsoft Store MSIX** workflow runs automatically when packaging inputs change on `main`; it can also be run manually. Download its `neon-ledger-msix` artifact, extract the `.msix`, and upload that file through Partner Center.
 
 The build defaults now match the Store's exact identity values:
 
