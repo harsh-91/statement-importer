@@ -5,6 +5,7 @@ import argparse
 import csv
 import io
 import secrets
+import time
 import sys
 import threading
 import subprocess
@@ -42,6 +43,10 @@ from statement_importer.updater import (
     launch_verified_update, start_background_check, verified_update,
 )
 from statement_importer.version import __version__
+from statement_importer.diagnostics import (
+    create_diagnostic_bundle, open_report_folder, open_support_draft,
+    record_setup_event, REPORT_DIR, run_diagnostics, start_setup_run,
+)
 
 
 def resource_path(name: str) -> str:
@@ -134,6 +139,8 @@ def setup_database():
             if request.headers.get("X-Setup-Request") == "1":
                 return jsonify(error="Database setup is already running. Wait for it to finish."), 409
             return render_template("setup.html", fields=fields, error="Database setup is already running.", success=False), 409
+        mode = request.form.get("mode", "automatic")
+        setup_progress.update(run_id=start_setup_run(mode), started=time.monotonic())
         try:
             setup_progress.update(owner=session.get("csrf_token"), running=True, message="Checking database settings")
             return perform_setup(fields)
@@ -153,12 +160,18 @@ def setup_status():
 def perform_setup(fields):
     def progress(message):
         setup_progress["message"] = message
+        record_setup_event(setup_progress["run_id"], "progress", message)
 
     def finished(error=None):
         if not error:
             app.config.pop("STARTUP_ERROR", None)
+        elapsed = round(time.monotonic() - setup_progress.get("started", time.monotonic()), 1)
+        record_setup_event(
+            setup_progress["run_id"], "failed" if error else "completed",
+            error or f"Database setup completed in {elapsed} seconds",
+        )
         if request.headers.get("X-Setup-Request") == "1":
-            return (jsonify(error=error), 400) if error else jsonify(next=url_for("index"))
+            return (jsonify(error=error, diagnostics=url_for("diagnostics")), 400) if error else jsonify(next=url_for("index"))
         if not error:
             return redirect(url_for("setup_database", saved=1))
         return render_template("setup.html", fields=fields, error=error, success=False)
@@ -389,6 +402,43 @@ def transaction_browser():
 @app.get("/imports")
 def import_history():
     return render_template("imports.html", batches=list_imports(250))
+
+
+@app.route("/diagnostics", methods=["GET", "POST"])
+def diagnostics():
+    checks = run_diagnostics()
+    error = None
+    message = None
+    bundle = None
+    stored_bundle = session.get("diagnostic_bundle")
+    if stored_bundle:
+        candidate = Path(stored_bundle)
+        if candidate.parent == REPORT_DIR and candidate.exists():
+            bundle = candidate
+    if request.method == "POST":
+        verify_csrf()
+        action = request.form.get("action")
+        try:
+            if action == "create":
+                bundle = create_diagnostic_bundle(checks)
+                session["diagnostic_bundle"] = str(bundle)
+                message = "Diagnostic bundle created. Review it before sharing."
+            elif action == "folder":
+                open_report_folder()
+                message = "The diagnostic report folder is open."
+            elif action == "email":
+                if not bundle:
+                    raise ValueError("Create a diagnostic bundle first.")
+                open_support_draft(bundle)
+                message = "Your report folder and an email draft are open. Attach the ZIP file, add what happened, review, and send."
+            else:
+                abort(400, "Unknown diagnostic action")
+        except (OSError, ValueError) as exception:
+            error = str(exception)
+    return render_template(
+        "diagnostics.html", checks=checks, bundle=bundle,
+        message=message, error=error, app_version=__version__,
+    )
 
 
 @app.get("/export/transactions.csv")

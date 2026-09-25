@@ -1,9 +1,14 @@
 <!-- Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0 -->
-# Statement Importer 1.4.0
+# Statement Importer 1.5.0
 
 Created by **Harsh** ([@harsh-91](https://github.com/harsh-91)) · Made in India 🇮🇳
 
 ## Highlights
+
+- Built-in database diagnostics identify PostgreSQL discovery, managed-state, local-port, saved-connection, runtime and storage failures.
+- Setup stages and errors are retained in a small rotating, privacy-redacted local event log.
+- Users can create a reviewable support ZIP without statements, transactions, database contents, credentials, protected settings or raw PostgreSQL logs.
+- **Prepare email to support** opens the report folder and an addressed draft; attaching and sending always remain explicit user actions.
 
 - Upgrade preparation shows elapsed time and verifies the executable is released before replacing it.
 - Setup asks the old app to close normally, then asks permission before forcing a background copy to close. Only the selected installation path is targeted.
@@ -50,11 +55,11 @@ The installer can offer optional winget prerequisite downloads. Once prerequisit
 ## Install
 
 1. Cancel any older installer currently showing a closing-applications error.
-2. Download `StatementImporter-1.4.0-Setup-x64.exe` and `SHA256SUMS.txt`.
+2. Download `StatementImporter-1.5.0-Setup-x64.exe` and `SHA256SUMS.txt`.
 3. Verify the installer SHA-256 checksum.
 4. Finish any import or backup, then run the installer. If the previous app is stuck in the background, setup asks before closing it. Retry or cancel if files cannot be released.
 5. Launch Statement Importer and click **Set up storage and continue**. Follow the live stage messages until the importer opens.
 
 ## Distribution notice
 
-Statement Importer 1.4.0 is open-source software distributed under the Apache License 2.0. Versions through 1.3.0 retain their original MIT terms. Check the release page for the signing status of this installer, verify its published SHA-256, and review the [code signing policy](https://github.com/harsh-91/statement-importer/blob/main/CODE_SIGNING.md). The in-app updater refuses unsigned installers. This release is not represented as regulated financial software and should receive independent review before regulated or high-risk use.
+Statement Importer 1.5.0 is open-source software distributed under the Apache License 2.0. Versions through 1.3.0 retain their original MIT terms. Check the release page for the signing status of this installer, verify its published SHA-256, and review the [code signing policy](https://github.com/harsh-91/statement-importer/blob/main/CODE_SIGNING.md). The in-app updater refuses unsigned installers. This release is not represented as regulated financial software and should receive independent review before regulated or high-risk use.

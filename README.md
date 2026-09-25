@@ -7,7 +7,7 @@ Offline-first Windows desktop application for reconciling bank statements into P
 
 ## Install
 
-Download `StatementImporter-1.4.0-Setup-x64.exe` from the repository's [latest release](https://github.com/harsh-91/statement-importer/releases/latest). Setup displays upgrade progress, checks that the old executable is released, and asks before forcibly closing a background copy. A failed check offers retry or cancellation. Finish imports and backups before updating.
+Download the recommended Windows setup from the repository's [latest release](https://github.com/harsh-91/statement-importer/releases/latest). Setup displays upgrade progress, checks that the old executable is released, and asks before forcibly closing a background copy. A failed check offers retry or cancellation. Finish imports and backups before updating.
 
 On first launch, choose **Set up storage and continue**. Live step messages and elapsed time stay visible while your local database is prepared. On success, the importer opens automatically. Advanced connection fields stay available after an error. Prerequisite downloads run in visible vendor windows; follow their prompts before returning to the app.
 
@@ -31,6 +31,14 @@ On first launch, choose **Create my local database automatically**. The app crea
 Files are detected from their structure rather than filename. Encrypted statements support per-file passwords or one batch password. Statement passwords are never saved.
 
 > Never upload real statements, `.env` files, database backups, API keys, or screenshots containing account data to GitHub. This repository intentionally contains no personal financial data.
+
+## Diagnostics and bug reports
+
+Open **Diagnostics** in the app, or use the troubleshooting link on the database setup screen. The utility checks PostgreSQL discovery, the managed local port, saved connection reachability, application runtime, folder access and free disk space.
+
+Choose **Create privacy-safe report** to save a ZIP under `Documents\Statement Importer Reports`. It contains a system summary, check results and recent setup-stage events. It excludes statement files, transactions, database contents, passwords, API keys, encrypted configuration values and PostgreSQL log contents.
+
+Choose **Prepare email to support** to open the report folder and a draft addressed to `harshnair02@gmail.com`. The user must review the ZIP, attach it and send the message; the app never uploads or sends diagnostics automatically. Diagnostics work offline, while sending email requires the user's configured email application and internet access.
 
 ## Database
 
@@ -85,7 +93,7 @@ Build the app and setup executable:
 .\build_windows.ps1
 ```
 
-When Inno Setup 6/7 or the project-local compiler is available, the build also produces the conventional `StatementImporter-1.4.0-Setup-x64.exe` installer from `installer\StatementImporter.iss`.
+When Inno Setup 6/7 or the project-local compiler is available, the build also produces the conventional `StatementImporter-1.5.0-Setup-x64.exe` installer from `installer\StatementImporter.iss`.
 
 See `IMPLEMENTATION_REPORT.md` for the full incremental implementation and test record.
 

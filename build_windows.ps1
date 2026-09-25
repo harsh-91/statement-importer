@@ -24,17 +24,18 @@ Copy-Item -LiteralPath (Join-Path $projectRoot 'requirements-lock.txt') -Destina
 $localIscc = Join-Path $projectRoot 'tools\inno\ISCC.exe'
 $installedIscc = Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6\ISCC.exe'
 $installedIscc7 = Join-Path $env:ProgramFiles 'Inno Setup 7\ISCC.exe'
+$userIscc = Join-Path $env:LOCALAPPDATA 'Programs\Inno Setup 6\ISCC.exe'
 $registeredIscc = Get-ChildItem 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall','HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall' -ErrorAction SilentlyContinue |
     Get-ItemProperty -ErrorAction SilentlyContinue |
     Where-Object { $_.DisplayName -like 'Inno Setup 7*' -and $_.InstallLocation } |
     ForEach-Object { Join-Path $_.InstallLocation 'ISCC.exe' } |
     Where-Object { Test-Path -LiteralPath $_ } |
     Select-Object -First 1
-$iscc = @($localIscc, $registeredIscc, $installedIscc7, $installedIscc) | Where-Object { $_ -and (Test-Path -LiteralPath $_) } | Select-Object -First 1
+$iscc = @($localIscc, $registeredIscc, $userIscc, $installedIscc7, $installedIscc) | Where-Object { $_ -and (Test-Path -LiteralPath $_) } | Select-Object -First 1
 if ($iscc) {
     & $iscc (Join-Path $projectRoot 'installer\StatementImporter.iss')
     if ($LASTEXITCODE -ne 0) { throw 'Conventional installer build failed.' }
-    Write-Host "Built: $projectRoot\dist\StatementImporter-1.4.0-Setup-x64.exe"
+    Write-Host "Built: $projectRoot\dist\StatementImporter-1.5.0-Setup-x64.exe"
 } else {
     Write-Warning 'Inno Setup compiler not found; conventional installer was not built.'
 }

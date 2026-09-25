@@ -24,6 +24,7 @@
       <p id="setup-help">The current step appears here as it runs. Creating a new database can take a few minutes.</p>
     </section>
     <div id="setup-error" class="banner error-banner" role="alert" hidden></div>
+    <p id="setup-diagnostics" class="support-link" hidden><a class="pixel-link" href="{{ url_for('diagnostics') }}">[ RUN DIAGNOSTICS + CREATE BUG REPORT ]</a></p>
 
     <section class="panel">
       <form method="post" class="setup-form" data-setup-form>
@@ -51,6 +52,14 @@
         <button type="submit">Connect and continue</button>
       </form>
     </details>
+
+    <section class="panel support-panel">
+      <div class="panel-title"><span>?</span> SETUP TROUBLESHOOTING</div>
+      <div class="service-body">
+        <p>If database setup does not finish, run the built-in checks and create a privacy-safe support ZIP.</p>
+        <p><a class="pixel-link" href="{{ url_for('diagnostics') }}">[ OPEN DIAGNOSTICS + BUG REPORT ]</a></p>
+      </div>
+    </section>
   </main>
   <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>

@@ -65,6 +65,7 @@
       } catch (failure) {
         error.textContent = `${failure.message} Your settings remain available below. If the connection to the app was lost, reload to check whether setup is still running before retrying.`;
         error.hidden = false;
+        document.getElementById('setup-diagnostics').hidden = false;
         buttons.forEach(button => { button.disabled = false; });
       } finally {
         polling = false;

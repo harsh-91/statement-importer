@@ -1,0 +1,64 @@
+<!-- Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0 -->
+<!doctype html>
+<html lang="en" data-effects="on">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Diagnostics · Statement Importer</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="scanlines" aria-hidden="true"></div>
+  <main class="shell setup-shell">
+    <nav class="topbar">
+      <a class="brand" href="{{ url_for('index') }}">STATEMENT_IMPORTER<span class="cursor">_</span></a>
+      <div class="nav-actions"><a href="{{ url_for('setup_database') }}">[ DATABASE SETTINGS ]</a><a href="{{ url_for('index') }}">[ HOME ]</a></div>
+    </nav>
+    <header class="compact-hero">
+      <p class="command">C:\BANK_DATA&gt; DIAGNOSTICS.EXE</p>
+      <h1>FIND THE FAULT.<br><span>REPORT IT SAFELY.</span></h1>
+      <p class="intro">These checks run locally. Nothing is uploaded automatically.</p>
+    </header>
+
+    {% if error %}<div class="banner error-banner" role="alert">{{ error }}</div>{% endif %}
+    {% if message %}<div class="banner success-banner" role="status">{{ message }}</div>{% endif %}
+
+    <section class="terminal-panel">
+      <div class="panel-title"><span>01</span> DATABASE SETUP CHECKS</div>
+      <div class="diagnostic-list">
+        {% for check in checks %}
+        <article class="diagnostic-check {{ check.status }}">
+          <span class="diagnostic-status">{{ check.status | upper }}</span>
+          <div><h2>{{ check.name }}</h2><p>{{ check.detail }}</p>{% if check.action %}<small>NEXT: {{ check.action }}</small>{% endif %}</div>
+        </article>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="terminal-panel">
+      <div class="panel-title"><span>02</span> CREATE + SEND BUG REPORT</div>
+      <div class="support-body">
+        <p>The ZIP contains system/runtime details, check results and recent setup stages. It does <strong>not</strong> include statements, transactions, database contents, passwords, API keys, protected configuration values or PostgreSQL log contents.</p>
+        <form method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="action" value="create">
+          <button type="submit">&gt; CREATE PRIVACY-SAFE REPORT</button>
+        </form>
+        {% if bundle %}
+        <div class="report-ready">
+          <strong>REPORT READY</strong>
+          <code>{{ bundle.name }}</code>
+          <p>Review the ZIP before sharing. “Prepare email” opens your report folder and a draft addressed to support; your email app will not attach or send it automatically.</p>
+          <div class="report-actions">
+            <form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="folder"><button type="submit">OPEN REPORT FOLDER</button></form>
+            <form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="email"><button type="submit">PREPARE EMAIL TO SUPPORT</button></form>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </section>
+    <p class="note">Support email: harshnair02@gmail.com · App version {{ app_version }}</p>
+  </main>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

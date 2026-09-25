@@ -3,6 +3,14 @@
 
 Created by Harsh · Made in India 🇮🇳
 
+## 1.5.0 - 2026-09-25
+
+- Added local database setup diagnostics covering PostgreSQL discovery, runtime, managed-port reachability, saved-connection health, storage access and free space.
+- Added bounded, privacy-redacted setup event logging so failures survive an app restart.
+- Added one-click creation of a reviewable diagnostic ZIP with no statements, transactions, database contents, passwords, API keys, protected settings or PostgreSQL log contents.
+- Added a guided support-email draft that opens the report folder; attachment and sending always require explicit user action.
+- Added direct Diagnostics links on the setup failure screen and main navigation.
+
 ## 1.4.0 - 2026-09-22
 
 - Replaced unverified, name-wide process termination with an exact-installation-path helper and an exclusive file-release check.

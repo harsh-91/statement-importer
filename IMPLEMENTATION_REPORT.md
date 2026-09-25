@@ -220,3 +220,20 @@ Earlier 1.3.x checks did not exercise the actual installer with a running execut
 - Tests use disposable fixture processes and installation folders; they do not terminate the user's installed app or change the user's financial database.
 - Verification was performed on this Windows 11 host. A clean Windows 10/11 machine matrix, corporate PowerShell restrictions, and third-party prerequisite download failures remain additional compatibility work; this is not a universal compatibility certification.
 - Published artifacts remain unsigned until trusted signing is available; SHA256SUMS.txt is authoritative for the release digest.
+
+## 16. Database diagnostics and guided bug reports (v1.5.0, 2026-09-25)
+
+- Added a local Diagnostics screen linked from the main navigation and database setup page.
+- Added checks for supported Windows/runtime details, PostgreSQL tools, partial managed-cluster state, local port availability, managed-port reachability, saved database access, diagnostic-folder permissions and free space.
+- Added a bounded 512 KiB setup event log with run identifiers, UTC timestamps, stages, completion timing and sanitized failures.
+- Added a ZIP generator containing only a system summary, controlled check results and redacted setup events. It explicitly excludes bank statements, transactions, database contents, passwords, API keys, protected configuration values and raw PostgreSQL log contents.
+- Added a guided email draft and report-folder action. The user reviews and manually attaches the ZIP; no diagnostic data is uploaded or sent automatically.
+
+### Verification
+
+- Python compilation passed for the application, desktop entry point, diagnostics module and tests.
+- All 33 unit tests passed, including redaction, report contents, CSRF-protected report creation, setup-failure logging and email-draft path privacy.
+- Both compiled-installer integration tests passed: the installer refused replacement while a target executable was busy, preserved an unrelated same-name process, and completed after safe release.
+- Browser checks passed at 320, 390, 760 and 1100 pixel widths with no horizontal overflow or JavaScript errors.
+- The diagnostics and setup troubleshooting screens were visually reviewed on Windows 11.
+- Raw PostgreSQL logs were intentionally excluded because they can contain user, database or statement-related identifiers.
