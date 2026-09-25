@@ -40,7 +40,7 @@ Open **Diagnostics** in the app, or use the troubleshooting link on the database
 
 Choose **Create privacy-safe report** to save a ZIP under `Documents\Statement Importer Reports`. It contains a system summary, check results and recent setup-stage events. It excludes statement files, transactions, database contents, passwords, API keys, encrypted configuration values and PostgreSQL log contents.
 
-Choose **Prepare email to support** to open the report folder and a draft addressed to `harshnair02@gmail.com`. The user must review the ZIP, attach it and send the message; the app never uploads or sends diagnostics automatically. Diagnostics work offline, while sending email requires the user's configured email application and internet access.
+Choose **Prepare email to support** to open the report folder and a draft addressed to `harshnair02@hotmail.com`. The user must review the ZIP, attach it and send the message; the app never uploads or sends diagnostics automatically. Diagnostics work offline, while sending email requires the user's configured email application and internet access.
 
 ## Database
 
@@ -95,7 +95,7 @@ Build the app and setup executable:
 .\build_windows.ps1
 ```
 
-When Inno Setup 6/7 or the project-local compiler is available, the build also produces the conventional `StatementImporter-1.6.0-Setup-x64.exe` installer from `installer\StatementImporter.iss`.
+When Inno Setup 6/7 or the project-local compiler is available, the build also produces a versioned conventional `StatementImporter-<version>-Setup-x64.exe` installer from `installer\StatementImporter.iss`.
 
 Build the Microsoft Store package on a Windows SDK machine or through GitHub Actions:
 

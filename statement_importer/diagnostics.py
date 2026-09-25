@@ -252,4 +252,4 @@ def open_support_draft(bundle: Path) -> None:
         f"Report file: {bundle.name}\n\nWhat I saw:\n\nSteps I tried:\n"
     )
     open_report_folder()
-    webbrowser.open(f"mailto:harshnair02@gmail.com?subject={subject}&body={body}")
+    webbrowser.open(f"mailto:harshnair02@hotmail.com?subject={subject}&body={body}")

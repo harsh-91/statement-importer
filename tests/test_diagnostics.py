@@ -72,6 +72,7 @@ class DiagnosticTests(unittest.TestCase):
         bundle = Path.home() / "Documents" / "Statement Importer Reports" / "safe-report.zip"
         with patch.object(diagnostics, "open_report_folder"), patch.object(diagnostics.webbrowser, "open") as opener:
             diagnostics.open_support_draft(bundle)
+            self.assertIn("mailto:harshnair02@hotmail.com", opener.call_args.args[0])
         draft_url = opener.call_args.args[0]
         self.assertIn("safe-report.zip", draft_url)
         self.assertNotIn("Documents", draft_url)

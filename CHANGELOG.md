@@ -1,6 +1,13 @@
 <!-- Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0 -->
 # Changelog
 
+## 1.6.1 - 2026-09-26 (prepared, not released)
+
+- Updated the in-app support email and diagnostic draft to `harshnair02@hotmail.com` for the pending Store submission.
+- Kept the existing 1.6.0 Store draft unpublished until a replacement package can be built and validated.
+
+Created by Harsh · Made in India 🇮🇳
+
 ## 1.6.0 - 2026-09-25
 
 - Added a Microsoft Store MSIX build with Store-managed signing, installation, repair, and updates.
