@@ -238,3 +238,22 @@ Earlier 1.3.x checks did not exercise the actual installer with a running execut
 - Browser checks passed at 320, 390, 760 and 1100 pixel widths with no horizontal overflow or JavaScript errors.
 - The diagnostics and setup troubleshooting screens were visually reviewed on Windows 11.
 - Raw PostgreSQL logs were intentionally excluded because they can contain user, database or statement-related identifiers.
+
+## 17. Microsoft Store MSIX distribution (v1.6.0, 2026-09-25)
+
+- Added an x64 full-trust MSIX manifest targeting supported Windows 10 and Windows 11 desktop systems.
+- Added a deterministic PowerShell package builder that produces a PyInstaller onedir payload, retro tile assets, an unsigned Store submission MSIX and a SHA-256 sidecar.
+- Pinned the EDB PostgreSQL 17.11 Windows binary archive to SHA-256 `B9424EE7BC60B52450FF910A3630225DF32E633F3CB29C1D126D9299D59AEA28` before bundling it.
+- Changed PostgreSQL discovery to prefer the package-local runtime while retaining explicit override, PATH and conventional installation fallbacks.
+- Kept database files, protected credentials and user settings under the Windows user profile so Store replacement does not erase them.
+- Added Windows package-identity detection. MSIX installations use Store-managed updates and never open the legacy GitHub installer flow.
+- Added a separate GitHub Actions workflow with locked Python dependencies, PostgreSQL archive caching and Store-package artifact upload.
+- Documented the required Partner Center identity variables and made clear that development placeholders are not production identities.
+
+### Verification
+
+- All 36 unit tests passed; one optional compiled legacy-installer integration test was skipped by design.
+- The Store-managed update page test confirms that installer download controls are absent in MSIX mode.
+- Python compilation, PowerShell parsing and Appx manifest XML parsing passed.
+- The PyInstaller onedir payload completed successfully and its non-UI `--shutdown` smoke path exited with code 0.
+- A production-trusted package cannot be generated locally: Microsoft applies the trusted signature only after Partner Center submission and certification. Final Store identity validation and Windows clean-machine installation remain release-gate checks.

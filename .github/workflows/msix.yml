@@ -1,0 +1,53 @@
+# Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0
+name: Build Microsoft Store MSIX
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+  pull_request:
+    paths:
+      - "msix/**"
+      - "statement_importer/**"
+      - "desktop.py"
+      - "templates/**"
+      - "static/**"
+      - ".github/workflows/msix.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: windows-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install locked build dependencies
+        run: |
+          python -m venv .venv
+          .\.venv\Scripts\python.exe -m pip install -r requirements-build-lock.txt
+      - name: Cache pinned PostgreSQL archive
+        uses: actions/cache@v4
+        with:
+          path: .cache/postgresql-17.11-4-windows-x64-binaries.zip
+          key: postgresql-windows-x64-17.11-4-b9424ee7
+      - name: Build unsigned Store submission package
+        shell: pwsh
+        env:
+          MSIX_IDENTITY_NAME: ${{ vars.MSIX_IDENTITY_NAME }}
+          MSIX_PUBLISHER: ${{ vars.MSIX_PUBLISHER }}
+        run: .\msix\build_msix.ps1
+      - name: Upload Store submission artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: neon-ledger-msix
+          path: |
+            dist/*.msix
+            dist/*.msix.sha256
+          if-no-files-found: error

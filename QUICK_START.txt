@@ -2,15 +2,16 @@ Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2
 
 STATEMENT IMPORTER - WINDOWS QUICK START
 
-RECOMMENDED INSTALLER: StatementImporter-1.5.0-Setup-x64.exe
+RECOMMENDED: Install Neon Ledger from Microsoft Store after the listing is published.
+DEVELOPER/LEGACY INSTALLER: StatementImporter-1.6.0-Setup-x64.exe
 
-1. Use 64-bit Windows 10 build 17763+ or Windows 11. The setup checks PostgreSQL and WebView2.
-2. Run the setup package above. Finish imports and backups before upgrading. Follow the progress messages and allow setup to close the previous copy if asked. After installation, launch Statement Importer.
+1. Use 64-bit Windows 10 build 17763+ or Windows 11.
+2. Install from Microsoft Store. The Store package includes PostgreSQL tools, needs no administrator access, and receives signed Store updates.
 3. Click Set up storage and continue. Watch the current step and elapsed time; the importer opens when ready. Advanced users may connect an existing PostgreSQL server instead.
 4. Select one or more bank statement files and click Reconcile and import.
 5. Refresh your database or DBeaver connection to see newly inserted rows.
 6. Open Backups & Access to create a verified backup and an optional read-only reporting login.
-7. Open Updates to check manually or opt in to launch-time checks. Downloads and installs always require your click.
+7. Open Updates to confirm Store-managed updates. Legacy installations retain manual GitHub checks.
 8. If database setup fails, open Diagnostics to run local checks and create a privacy-safe report ZIP. Review it, then use Prepare email to support.
 
 Supported statement structures:
@@ -22,6 +23,6 @@ The app creates the required tables automatically. Statement passwords are never
 The PostgreSQL password is protected for the current Windows account using Windows DPAPI.
 Pending unmapped statements are also DPAPI-protected and deleted after 24 hours.
 
-The in-app updater rejects any installer without a matching SHA-256 and a valid SignPath Foundation signature.
-Check the release page for the signing status of a manually downloaded installer.
+Microsoft signs an accepted Store MSIX. Development MSIX files are not publicly trusted and are not for general distribution.
+Check the GitHub release page for the actual signing status of any legacy installer.
 Only distribute software and financial tools in accordance with applicable privacy and banking rules.

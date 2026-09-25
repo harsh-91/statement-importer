@@ -18,12 +18,22 @@
     <header class="hero compact-hero">
       <p class="command">C:\BANK_DATA&gt; UPDATE.EXE</p>
       <h1>SAFE<br><span>UPDATES.</span></h1>
-      <p class="intro">Checks only the official GitHub release. Nothing downloads or installs without your click.</p>
+      <p class="intro">{% if store_managed %}Microsoft Store securely delivers and signs updates for this installation.{% else %}Checks only the official GitHub release. Nothing downloads or installs without your click.{% endif %}</p>
     </header>
 
     {% if error %}<p class="banner error-banner">[BLOCKED] {{ error }}</p>{% endif %}
     {% if message %}<p class="banner success-banner">[OK] {{ message }}</p>{% endif %}
 
+    {% if store_managed %}
+    <section class="panel">
+      <div class="panel-title"><span>01</span> MICROSOFT STORE</div>
+      <div class="update-body">
+        <p class="service-state on">STORE-MANAGED UPDATES ACTIVE</p>
+        <p>Windows checks, verifies, downloads, and installs signed updates through Microsoft Store.</p>
+        <p class="note">No statement data, database contents, passwords, or API keys are sent to Microsoft by Statement Importer. Core importing remains offline.</p>
+      </div>
+    </section>
+    {% else %}
     <section class="panel">
       <div class="panel-title"><span>01</span> CHECK POLICY</div>
       <div class="update-body">
@@ -86,6 +96,7 @@
         {% endif %}
       </div>
     </section>
+    {% endif %}
   </main>
   <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>

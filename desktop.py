@@ -20,6 +20,7 @@ from statement_importer.database import ensure_schema
 from statement_importer.local_postgres import LocalPostgresError, start_managed_postgres_if_present
 from statement_importer.updater import start_background_check
 from statement_importer.diagnostics import record_setup_event
+from statement_importer.windows_package import is_msix_package
 
 
 _mutex_handle = None
@@ -133,7 +134,8 @@ def main():
                 start_managed_postgres_if_present()
                 show("Checking your database and tables...")
                 ensure_schema()
-                start_background_check(bool(get_setting("automatic_update_checks", False)))
+                if not is_msix_package():
+                    start_background_check(bool(get_setting("automatic_update_checks", False)))
                 window.load_url("http://127.0.0.1:8765/")
             except Exception as error:
                 record_setup_event("startup", "failed", error, mode="startup")

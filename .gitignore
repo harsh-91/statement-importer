@@ -15,3 +15,6 @@ setup-payload/
 *.csv
 *.sqlite*
 pending/
+.cache/
+*.msix
+*.msix.sha256

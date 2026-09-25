@@ -5,7 +5,9 @@
 
 Statement Importer releases must not be represented as signed until a trusted Authenticode signature has been applied and independently verified. Check each GitHub release for its actual signing status.
 
-The project is preparing an application for **free code signing provided by SignPath.io, certificate by SignPath Foundation**. Signing can begin only after the open-source project is reviewed and approved by SignPath Foundation.
+The primary release route is now Microsoft Store MSIX distribution. Microsoft signs an accepted MSIX package during Store publishing, so this repository never stores a private signing key.
+
+The SignPath Foundation application was not approved at the project's current adoption level. It may be reconsidered later, but it is not a dependency of the Store route.
 
 ## Team roles
 
@@ -19,7 +21,8 @@ The project is preparing an application for **free code signing provided by Sign
 - Every signed release must publish SHA-256 checksums.
 - Authenticode signatures and timestamps must be verified before upload.
 - Unsigned historical releases remain clearly identified as unsigned.
-- The in-app updater must reject any installer that Windows does not validate as signed by SignPath Foundation.
+- MSIX installations use Microsoft Store updates and disable the legacy installer updater.
+- Legacy installations retain strict SHA-256 and Authenticode checks; they are not represented as Store-signed.
 - Update installation is always initiated by the user; automatic checks never imply automatic download or installation.
 
 ## Privacy policy

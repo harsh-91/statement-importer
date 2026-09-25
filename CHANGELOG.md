@@ -1,6 +1,15 @@
 <!-- Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0 -->
 # Changelog
 
+## 1.6.0 - 2026-09-25
+
+- Added a Microsoft Store MSIX build with Store-managed signing, installation, repair, and updates.
+- Bundled a hash-pinned PostgreSQL 17.11 redistributable for one-click per-user local storage without elevation.
+- Changed the MSIX build to PyInstaller onedir so PostgreSQL and runtime files are not unpacked on every launch.
+- Preserved database and configuration state under the user's profile across package upgrades.
+- Disabled the legacy GitHub installer updater when the process has MSIX package identity.
+- Added deterministic package-identity detection, tests, Store artwork generation, SHA-256 output, and a manual/tagged GitHub build workflow.
+
 Created by Harsh · Made in India 🇮🇳
 
 ## 1.5.0 - 2026-09-25

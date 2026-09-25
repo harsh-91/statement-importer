@@ -43,6 +43,7 @@ from statement_importer.updater import (
     launch_verified_update, start_background_check, verified_update,
 )
 from statement_importer.version import __version__
+from statement_importer.windows_package import is_msix_package
 from statement_importer.diagnostics import (
     create_diagnostic_bundle, open_report_folder, open_support_draft,
     record_setup_event, REPORT_DIR, run_diagnostics, start_setup_run,
@@ -124,7 +125,7 @@ def index():
         return redirect(url_for("setup_database"))
     return render_template(
         "index.html", results=None, counts=counts, stats=dashboard_stats(),
-        update=cached_update(), app_version=__version__,
+        update=None if is_msix_package() else cached_update(), app_version=__version__,
     )
 
 
@@ -270,12 +271,19 @@ def upload_statements():
         return redirect(url_for("setup_database"))
     return render_template(
         "index.html", results=results, counts=counts, stats=dashboard_stats(), batch_id=batch_id,
-        update=cached_update(), app_version=__version__,
+        update=None if is_msix_package() else cached_update(), app_version=__version__,
     )
 
 
 @app.route("/updates", methods=["GET", "POST"])
 def updates():
+    if is_msix_package():
+        if request.method == "POST":
+            abort(400, "Microsoft Store manages updates for this installation")
+        return render_template(
+            "updates.html", app_version=__version__, update=None, ready=None,
+            automatic=False, message=None, error=None, store_managed=True,
+        )
     result = None
     error = None
     message = None
@@ -312,7 +320,7 @@ def updates():
         ready = verified_update()
     return render_template(
         "updates.html", app_version=__version__, update=result, ready=ready,
-        automatic=automatic, message=message, error=error,
+        automatic=automatic, message=message, error=error, store_managed=False,
     )
 
 

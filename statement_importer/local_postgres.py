@@ -7,6 +7,7 @@ import secrets
 import shutil
 import socket
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
@@ -41,6 +42,11 @@ def _version_key(path: Path) -> tuple[int, ...]:
 
 
 def find_postgres_bin() -> Path:
+    override = os.environ.get("STATEMENT_IMPORTER_POSTGRES_BIN")
+    packaged = Path(sys.executable).resolve().parent / "postgresql" / "bin"
+    for candidate in (Path(override).resolve() if override else None, packaged):
+        if candidate and all((candidate / name).exists() for name in ("initdb.exe", "pg_ctl.exe", "postgres.exe")):
+            return candidate
     initdb = shutil.which("initdb")
     if initdb:
         candidate = Path(initdb).resolve().parent
@@ -52,7 +58,7 @@ def find_postgres_bin() -> Path:
         if (candidate.parent / "pg_ctl.exe").exists():
             return candidate.parent
     raise LocalPostgresError(
-        "PostgreSQL tools were not found. Install PostgreSQL from the setup wizard, then reopen Statement Importer."
+        "PostgreSQL tools were not found. Install PostgreSQL, or reinstall the Microsoft Store package, then reopen Statement Importer."
     )
 
 

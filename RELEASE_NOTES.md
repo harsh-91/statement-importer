@@ -1,9 +1,15 @@
 <!-- Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0 -->
-# Statement Importer 1.5.0
+# Statement Importer 1.6.0
 
 Created by **Harsh** ([@harsh-91](https://github.com/harsh-91)) · Made in India 🇮🇳
 
 ## Highlights
+
+- Added a Microsoft Store MSIX distribution path. Microsoft signs accepted packages and manages safe, atomic updates.
+- The Store package includes a SHA-256-pinned PostgreSQL 17.11 runtime and creates private per-user storage without administrator access.
+- Store installations no longer invoke a prerequisite installer, use winget, or ask users to close background tasks during upgrades.
+- Existing database data and protected settings remain in the Windows user profile across Store updates.
+- The legacy EXE installer remains available for development and controlled testing.
 
 - Built-in database diagnostics identify PostgreSQL discovery, managed-state, local-port, saved-connection, runtime and storage failures.
 - Setup stages and errors are retained in a small rotating, privacy-redacted local event log.

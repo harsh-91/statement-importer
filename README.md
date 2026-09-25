@@ -7,17 +7,19 @@ Offline-first Windows desktop application for reconciling bank statements into P
 
 ## Install
 
-Download the recommended Windows setup from the repository's [latest release](https://github.com/harsh-91/statement-importer/releases/latest). Setup displays upgrade progress, checks that the old executable is released, and asks before forcibly closing a background copy. A failed check offers retry or cancellation. Finish imports and backups before updating.
+The recommended distribution is the Microsoft Store MSIX package. Microsoft signs approved packages and delivers atomic updates without a separate installer, elevation, or Task Manager cleanup. Until the Store listing is approved, development packages are produced by the `Build Microsoft Store MSIX` workflow but are not publicly trusted.
+
+The conventional Windows setup remains available from the repository's [latest release](https://github.com/harsh-91/statement-importer/releases/latest) as a legacy/developer distribution.
 
 On first launch, choose **Set up storage and continue**. Live step messages and elapsed time stay visible while your local database is prepared. On success, the importer opens automatically. Advanced connection fields stay available after an error. Prerequisite downloads run in visible vendor windows; follow their prompts before returning to the app.
 
-This build targets supported 64-bit Intel/AMD editions of Windows 10 (build 17763+) and Windows 11. The setup checks the platform, PostgreSQL, and Microsoft Edge WebView2; PostgreSQL and WebView2 can be installed through winget or supplied manually.
+This build targets supported 64-bit Intel/AMD editions of Windows 10 (build 17763+) and Windows 11. The MSIX bundles verified PostgreSQL server binaries and uses the Windows-provided WebView2 runtime where available.
 
-The setup detects PostgreSQL and Microsoft Edge WebView2. If either is unavailable, select its optional winget task when internet is available or install it independently.
+The MSIX does not install services or prerequisites and does not require administrator access. Its private database lives under the current user's profile and survives Store updates. Legacy builds can still detect an independently installed PostgreSQL instance.
 
 The application itself, statement processing, PostgreSQL access, REST API, and MCP endpoint require no internet connection.
 
-From version 1.3.0, open **Updates** to check the official GitHub release manually or opt in to a launch-time check. The app never downloads or installs an update silently. A downloaded installer is accepted only when its SHA-256 matches the published manifest and Windows reports a valid SignPath Foundation Authenticode signature. Users on an earlier build must install 1.3.0 manually once to gain this updater.
+For MSIX installations, open **Updates** to confirm that Microsoft Store management is active; Windows handles signature verification and delivery. The GitHub updater remains only for legacy installations and never downloads or installs without an explicit click.
 
 On first launch, choose **Create my local database automatically**. The app creates an isolated local PostgreSQL cluster, database, and least-privilege application login. Generated credentials are protected for the current Windows account with DPAPI. Manual server fields remain available under **Advanced**.
 
@@ -93,7 +95,15 @@ Build the app and setup executable:
 .\build_windows.ps1
 ```
 
-When Inno Setup 6/7 or the project-local compiler is available, the build also produces the conventional `StatementImporter-1.5.0-Setup-x64.exe` installer from `installer\StatementImporter.iss`.
+When Inno Setup 6/7 or the project-local compiler is available, the build also produces the conventional `StatementImporter-1.6.0-Setup-x64.exe` installer from `installer\StatementImporter.iss`.
+
+Build the Microsoft Store package on a Windows SDK machine or through GitHub Actions:
+
+```powershell
+.\msix\build_msix.ps1 -IdentityName 'PARTNER_CENTER_IDENTITY' -Publisher 'PARTNER_CENTER_PUBLISHER'
+```
+
+See [msix/README.md](msix/README.md) for the required Partner Center identity values and submission checklist.
 
 See `IMPLEMENTATION_REPORT.md` for the full incremental implementation and test record.
 

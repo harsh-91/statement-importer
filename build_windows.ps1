@@ -1,6 +1,9 @@
 # Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+$versionSource = Get-Content -Raw (Join-Path $projectRoot 'statement_importer\version.py')
+$version = [regex]::Match($versionSource, '__version__\s*=\s*"(?<version>\d+\.\d+\.\d+)"').Groups['version'].Value
+if (-not $version) { throw 'Could not read application version.' }
 $python = Join-Path $projectRoot '.venv\Scripts\python.exe'
 if (-not (Test-Path -LiteralPath $python)) {
     py -3 -m venv (Join-Path $projectRoot '.venv')
@@ -35,7 +38,7 @@ $iscc = @($localIscc, $registeredIscc, $userIscc, $installedIscc7, $installedIsc
 if ($iscc) {
     & $iscc (Join-Path $projectRoot 'installer\StatementImporter.iss')
     if ($LASTEXITCODE -ne 0) { throw 'Conventional installer build failed.' }
-    Write-Host "Built: $projectRoot\dist\StatementImporter-1.5.0-Setup-x64.exe"
+    Write-Host "Built: $projectRoot\dist\StatementImporter-$version-Setup-x64.exe"
 } else {
     Write-Warning 'Inno Setup compiler not found; conventional installer was not built.'
 }

@@ -1,5 +1,6 @@
 # Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0
 import unittest
+import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
@@ -27,6 +28,14 @@ class LocalPostgresTests(unittest.TestCase):
             local_postgres._version_key(Path("C:/Program Files/PostgreSQL/17/bin/initdb.exe")),
             local_postgres._version_key(Path("C:/Program Files/PostgreSQL/9.6/bin/initdb.exe")),
         )
+
+    def test_explicit_bundled_postgres_path_has_priority(self):
+        with tempfile.TemporaryDirectory() as folder:
+            binary = Path(folder)
+            for name in ("initdb.exe", "pg_ctl.exe", "postgres.exe"):
+                (binary / name).touch()
+            with patch.dict("os.environ", {"STATEMENT_IMPORTER_POSTGRES_BIN": str(binary)}):
+                self.assertEqual(local_postgres.find_postgres_bin(), binary.resolve())
 
 
 if __name__ == "__main__":
