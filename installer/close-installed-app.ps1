@@ -13,8 +13,10 @@ function Find-Target {
 }
 try {
     foreach ($process in (Find-Target)) {
-        if ($Force) { $process.Kill() }
-        else { [void]$process.CloseMainWindow() }
+        if ($Force) {
+            try { $process.Kill($true) } catch { $process.Kill() }
+            try { [void]$process.WaitForExit(5000) } catch { }
+        } else { [void]$process.CloseMainWindow() }
     }
     do {
         if ((Find-Target).Count -eq 0) {
@@ -26,7 +28,7 @@ try {
             } catch [IO.IOException] { }
         }
         Start-Sleep -Milliseconds 200
-    } while ($timer.Elapsed.TotalSeconds -lt 8)
+    } while ($timer.Elapsed.TotalSeconds -lt 12)
     [IO.File]::WriteAllText($ResultPath, 'busy')
 } catch {
     # No credentials or process command lines are written to the installer log.
