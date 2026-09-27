@@ -1,7 +1,9 @@
 <!-- Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0 -->
-# Statement Importer 1.6.0
+# Statement Importer 1.6.2
 
 Created by **Harsh** ([@harsh-91](https://github.com/harsh-91)) · Made in India 🇮🇳
+
+This prepared release fixes a first-run database setup hang in the Microsoft Store build. PostgreSQL startup now completes without waiting on output pipes held open by the server process.
 
 ## Highlights
 
