@@ -78,10 +78,13 @@ def choose_port(start: int = DEFAULT_PORT, attempts: int = 31) -> int:
     raise LocalPostgresError(f"No free local PostgreSQL port was found between {start} and {start + attempts - 1}.")
 
 
-def _run(command: list[str], *, timeout: int = 120) -> subprocess.CompletedProcess[str]:
+def _run(command: list[str], *, timeout: int = 120, capture_output: bool = True) -> subprocess.CompletedProcess[str]:
     try:
+        output = {"capture_output": True} if capture_output else {
+            "stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL,
+        }
         result = subprocess.run(
-            command, capture_output=True, text=True, timeout=timeout,
+            command, text=True, timeout=timeout, **output,
             creationflags=HIDDEN_PROCESS,
         )
     except subprocess.TimeoutExpired as error:
@@ -90,7 +93,7 @@ def _run(command: list[str], *, timeout: int = 120) -> subprocess.CompletedProce
             "You can retry setup. Existing data has been preserved."
         ) from error
     if result.returncode != 0:
-        message = (result.stderr or result.stdout or "PostgreSQL command failed").strip()
+        message = (result.stderr or result.stdout or f"PostgreSQL command failed; check {LOG_PATH}").strip()
         raise LocalPostgresError(message)
     return result
 
@@ -147,10 +150,12 @@ def _start(bin_dir: Path, port: int) -> None:
         return
     if not _port_is_available(port):
         raise LocalPostgresError(f"Local port {port} is already in use. Close the conflicting program and try again.")
+    # The server spawned by pg_ctl can inherit stdout/stderr. Pipes would keep
+    # subprocess.run waiting for EOF even after PostgreSQL is ready.
     _run([
         str(pg_ctl), "start", "-D", str(DATA_DIR), "-l", str(LOG_PATH),
         "-o", f"-p {port} -h 127.0.0.1", "-w", "-t", "60",
-    ])
+    ], timeout=75, capture_output=False)
 
 
 def _initialize(bin_dir: Path, port: int, owner_password: str) -> None:
