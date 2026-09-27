@@ -1,6 +1,7 @@
 # Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0
 import unittest
 import tempfile
+import subprocess
 from pathlib import Path
 from unittest.mock import patch
 
@@ -36,6 +37,21 @@ class LocalPostgresTests(unittest.TestCase):
                 (binary / name).touch()
             with patch.dict("os.environ", {"STATEMENT_IMPORTER_POSTGRES_BIN": str(binary)}):
                 self.assertEqual(local_postgres.find_postgres_bin(), binary.resolve())
+
+    def test_server_start_does_not_capture_inherited_output_pipes(self):
+        with patch.object(local_postgres.subprocess, "run", return_value=subprocess.CompletedProcess([], 0)) as run:
+            local_postgres._run(["pg_ctl.exe", "start"], capture_output=False)
+        self.assertEqual(run.call_args.kwargs["stdout"], subprocess.DEVNULL)
+        self.assertEqual(run.call_args.kwargs["stderr"], subprocess.DEVNULL)
+        self.assertNotIn("capture_output", run.call_args.kwargs)
+
+    def test_start_uses_noncapturing_process_runner(self):
+        with patch.object(local_postgres.subprocess, "run", return_value=subprocess.CompletedProcess([], 1)):
+            with patch.object(local_postgres, "_port_is_available", return_value=True):
+                with patch.object(local_postgres, "_run") as run:
+                    local_postgres._start(Path("C:/test-postgres/bin"), 55432)
+        self.assertEqual(run.call_args.kwargs["timeout"], 75)
+        self.assertIs(run.call_args.kwargs["capture_output"], False)
 
 
 if __name__ == "__main__":
