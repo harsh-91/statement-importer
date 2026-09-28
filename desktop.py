@@ -147,7 +147,7 @@ def main():
                 start_managed_postgres_if_present()
                 show("Checking your database and tables...")
                 ensure_schema()
-                if sys.platform != "darwin" and not is_msix_package():
+                if not is_msix_package():
                     start_background_check(bool(get_setting("automatic_update_checks", False)))
                 window.load_url("http://127.0.0.1:8765/")
             except Exception as error:

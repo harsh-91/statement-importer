@@ -18,7 +18,7 @@ The Mac beta uses the same local statement parser, PostgreSQL schema, desktop in
 
 This beta is ad hoc signed for local execution, but it is **not Developer ID signed or notarized**. macOS may block a downloaded copy. Use it only if you trust the official GitHub release and its SHA-256. A broadly distributable build requires Apple Developer ID signing and notarization.
 
-The Mac beta checks neither downloads nor installs updates automatically. Check the official release page for later versions and replace the app manually. User data and Keychain credentials remain outside the app bundle.
+Open **Updates** in the app to check for a newer Mac beta. The app selects the correct Apple Silicon or Intel ZIP, checks its published SHA-256 against GitHub's asset digest, and reveals the verified ZIP in Finder. Extract it and replace the app in Applications manually. Optional automatic checks read only release metadata; downloads and Finder require your click. User data and Keychain credentials remain outside the app bundle.
 
 ## Build
 

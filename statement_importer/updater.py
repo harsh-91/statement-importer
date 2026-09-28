@@ -4,7 +4,10 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import platform
+import re
 import subprocess
+import sys
 import threading
 import urllib.error
 import urllib.parse
@@ -18,7 +21,8 @@ from .version import __version__
 
 REPOSITORY = "harsh-91/statement-importer"
 LATEST_RELEASE_API = f"https://api.github.com/repos/{REPOSITORY}/releases/latest"
-UPDATE_DIR = Path(os.environ.get("LOCALAPPDATA", Path.home())) / "StatementImporter" / "updates"
+RELEASES_API = f"https://api.github.com/repos/{REPOSITORY}/releases?per_page=30"
+UPDATE_DIR = (Path.home() / "Library" / "Application Support" if sys.platform == "darwin" else Path(os.environ.get("LOCALAPPDATA", Path.home()))) / "StatementImporter" / "updates"
 CACHE_PATH = UPDATE_DIR / "latest.json"
 READY_PATH = UPDATE_DIR / "ready.json"
 MAX_INSTALLER_BYTES = 250 * 1024 * 1024
@@ -94,6 +98,15 @@ def _asset(release: dict[str, Any], name: str) -> dict[str, Any]:
     return asset
 
 
+def _mac_architecture() -> str:
+    machine = platform.machine().lower()
+    if machine in ("arm64", "aarch64"):
+        return "arm64"
+    if machine in ("x86_64", "amd64"):
+        return "x64"
+    raise UpdateError(f"Unsupported Mac architecture: {machine}")
+
+
 def _write_json_atomic(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(f".{os.getpid()}.{threading.get_ident()}.tmp")
@@ -106,21 +119,32 @@ def _write_json_atomic(path: Path, payload: dict[str, Any]) -> None:
 
 def check_latest_release() -> dict[str, Any]:
     try:
-        with _open(LATEST_RELEASE_API) as response:
+        with _open(RELEASES_API if sys.platform == "darwin" else LATEST_RELEASE_API) as response:
             release = json.loads(_read_limited(response, MAX_METADATA_BYTES).decode("utf-8"))
     except (UnicodeDecodeError, json.JSONDecodeError) as error:
         raise UpdateError("The update service returned invalid release metadata") from error
+    if sys.platform == "darwin":
+        if not isinstance(release, list):
+            raise UpdateError("The update service returned invalid release metadata")
+        candidates = [item for item in release if isinstance(item, dict) and not item.get("draft")
+                      and re.fullmatch(r"v\d+\.\d+\.\d+-mac-beta\.\d+", str(item.get("tag_name", "")))]
+        if not candidates:
+            raise UpdateError("No official Mac beta release is available")
+        release = max(candidates, key=lambda item: (_version_tuple(str(item["tag_name"]).split("-mac-beta.")[0]),
+                                                    int(str(item["tag_name"]).rsplit(".", 1)[1])))
     if not isinstance(release, dict):
         raise UpdateError("The update service returned invalid release metadata")
-    version = str(release.get("tag_name", "")).removeprefix("v")
+    version = str(release.get("tag_name", "")).removeprefix("v").split("-mac-beta.")[0]
     latest = _version_tuple(version)
     current = _version_tuple(__version__)
-    installer_name = f"StatementImporter-{version}-Setup-x64.exe"
+    installer_name = (f"StatementImporter-{version}-macOS-{_mac_architecture()}-beta.zip" if sys.platform == "darwin"
+                      else f"StatementImporter-{version}-Setup-x64.exe")
     installer = _asset(release, installer_name)
-    checksums = _asset(release, "SHA256SUMS.txt")
+    checksums = _asset(release, f"{installer_name}.sha256" if sys.platform == "darwin" else "SHA256SUMS.txt")
     result = {
         "current_version": __version__,
         "latest_version": version,
+        "platform": "mac" if sys.platform == "darwin" else "windows",
         "update_available": latest > current,
         "release_url": str(release.get("html_url", "")),
         "release_name": str(release.get("name") or release.get("tag_name") or version),
@@ -146,7 +170,8 @@ def cached_update() -> dict[str, Any] | None:
     try:
         payload = json.loads(CACHE_PATH.read_text(encoding="utf-8"))
         is_newer = _version_tuple(str(payload.get("latest_version", ""))) > _version_tuple(__version__)
-        return payload if is_newer else None
+        expected_platform = "mac" if sys.platform == "darwin" else "windows"
+        return payload if is_newer and payload.get("platform", "windows") == expected_platform else None
     except (OSError, json.JSONDecodeError, UpdateError):
         return None
 
@@ -192,8 +217,11 @@ def authenticode_status(path: Path) -> dict[str, str]:
     except json.JSONDecodeError as error:
         raise UpdateError("Windows returned an invalid signature-verification result") from error
     subject = str(signature.get("Subject") or "")
-    if signature.get("Status") != "Valid" or "SignPath Foundation" not in subject:
-        raise UpdateError("The installer is not validly signed by SignPath Foundation; installation was blocked")
+    status = str(signature.get("Status") or "")
+    if status == "NotSigned":
+        return {"status": "NotSigned", "subject": "", "thumbprint": ""}
+    if status != "Valid" or "SignPath Foundation" not in subject:
+        raise UpdateError("The installer has an invalid or unexpected Authenticode signature")
     return {"status": "Valid", "subject": subject, "thumbprint": str(signature.get("Thumbprint") or "")}
 
 
@@ -208,7 +236,7 @@ def download_verified_update() -> dict[str, Any]:
         checksum_text = _read_limited(response, 64 * 1024).decode("utf-8")
     expected = _expected_checksum(checksum_text, installer["name"])
     api_digest = installer["digest"]
-    if api_digest and api_digest.lower() != f"sha256:{expected.lower()}":
+    if not re.fullmatch(r"sha256:[0-9a-fA-F]{64}", api_digest) or api_digest.lower() != f"sha256:{expected.lower()}":
         raise UpdateError("GitHub's asset digest does not match the published checksum manifest")
 
     UPDATE_DIR.mkdir(parents=True, exist_ok=True)
@@ -227,11 +255,12 @@ def download_verified_update() -> dict[str, Any]:
                 output.write(chunk)
         if size != installer["size"] or digest.hexdigest().upper() != expected:
             raise UpdateError("The downloaded installer failed SHA-256 verification")
-        signature = authenticode_status(partial)
+        signature = None if sys.platform == "darwin" else authenticode_status(partial)
         partial.replace(target)
         ready = {
             "path": str(target), "version": release["latest_version"], "sha256": expected,
-            "signature": signature, "verified_at": datetime.now(timezone.utc).isoformat(),
+            "signature": signature, "platform": "mac" if sys.platform == "darwin" else "windows",
+            "verified_at": datetime.now(timezone.utc).isoformat(),
         }
         _write_json_atomic(READY_PATH, ready)
         return ready
@@ -247,7 +276,11 @@ def verified_update() -> dict[str, Any] | None:
         ready = json.loads(READY_PATH.read_text(encoding="utf-8"))
         path = Path(ready["path"])
         version = str(ready["version"])
-        expected_name = f"StatementImporter-{version}-Setup-x64.exe"
+        mac = sys.platform == "darwin"
+        expected_name = (f"StatementImporter-{version}-macOS-{_mac_architecture()}-beta.zip" if mac
+                         else f"StatementImporter-{version}-Setup-x64.exe")
+        if ready.get("platform", "windows") != ("mac" if mac else "windows"):
+            return None
         if _version_tuple(version) <= _version_tuple(__version__):
             return None
         if path.name != expected_name or path.resolve().parent != UPDATE_DIR.resolve():
@@ -257,7 +290,10 @@ def verified_update() -> dict[str, Any] | None:
             return None
         if not path.is_file() or _sha256_file(path) != checksum:
             return None
-        authenticode_status(path)
+        if not mac:
+            signature = authenticode_status(path)
+            if signature != ready.get("signature"):
+                return None
         return ready
     except (OSError, KeyError, TypeError, ValueError, json.JSONDecodeError, UpdateError):
         return None
@@ -267,7 +303,10 @@ def launch_verified_update() -> None:
     ready = verified_update()
     if not ready:
         raise UpdateError("No verified update is ready to install")
-    subprocess.Popen([ready["path"]], cwd=str(Path(ready["path"]).parent))
+    if sys.platform == "darwin":
+        subprocess.Popen(["open", "-R", ready["path"]])
+    else:
+        subprocess.Popen([ready["path"]], cwd=str(Path(ready["path"]).parent))
 
 
 def start_background_check(enabled: bool) -> None:

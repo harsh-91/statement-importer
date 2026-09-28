@@ -128,7 +128,7 @@ def index():
         return redirect(url_for("setup_database"))
     return render_template(
         "index.html", results=None, counts=counts, stats=dashboard_stats(),
-        update=None if is_msix_package() or sys.platform == "darwin" else cached_update(), app_version=__version__,
+        update=None if is_msix_package() else cached_update(), app_version=__version__,
     )
 
 
@@ -274,19 +274,12 @@ def upload_statements():
         return redirect(url_for("setup_database"))
     return render_template(
         "index.html", results=results, counts=counts, stats=dashboard_stats(), batch_id=batch_id,
-        update=None if is_msix_package() or sys.platform == "darwin" else cached_update(), app_version=__version__,
+        update=None if is_msix_package() else cached_update(), app_version=__version__,
     )
 
 
 @app.route("/updates", methods=["GET", "POST"])
 def updates():
-    if sys.platform == "darwin":
-        if request.method == "POST":
-            abort(400, "Mac beta updates are installed manually from the official release page")
-        return render_template(
-            "updates.html", app_version=__version__, update=None, ready=None,
-            automatic=False, message=None, error=None, store_managed=False, mac_beta=True,
-        )
     if is_msix_package():
         if request.method == "POST":
             abort(400, "Microsoft Store manages updates for this installation")
@@ -314,7 +307,8 @@ def updates():
                 message = f"Version {ready['version']} downloaded and verified."
             elif action == "install":
                 launch_verified_update()
-                message = "The verified installer is open. Follow its upgrade wizard."
+                message = ("The verified Mac ZIP is selected in Finder. Extract it, then replace the app in Applications."
+                           if sys.platform == "darwin" else "The verified installer is open. Follow its upgrade wizard.")
             else:
                 abort(400, "Unknown update action")
         if result is None:
@@ -330,7 +324,7 @@ def updates():
         ready = verified_update()
     return render_template(
         "updates.html", app_version=__version__, update=result, ready=ready,
-        automatic=automatic, message=message, error=error, store_managed=False,
+        automatic=automatic, message=message, error=error, store_managed=False, mac_beta=sys.platform == "darwin",
     )
 
 
@@ -508,7 +502,7 @@ def main():
         print(table_counts())
         return
     try:
-        if sys.platform != "darwin":
+        if not is_msix_package():
             start_background_check(bool(get_setting("automatic_update_checks", False)))
     except (ConfigError, psycopg.Error):
         pass
