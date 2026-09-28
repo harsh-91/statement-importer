@@ -1,0 +1,32 @@
+{
+  "manifest_version": "0.3",
+  "name": "neon-ledger-local",
+  "display_name": "Neon Ledger (local)",
+  "version": "1.0.0",
+  "description": "Connect Claude Desktop to Statement Importer's read-only local transaction tools.",
+  "author": { "name": "Harsh Nair" },
+  "homepage": "https://harsh-91.github.io/neon-ledger/",
+  "repository": { "type": "git", "url": "https://github.com/harsh-91/statement-importer" },
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/server/index.js"],
+      "env": { "NEON_LEDGER_API_KEY": "${user_config.api_key}" }
+    }
+  },
+  "user_config": {
+    "api_key": {
+      "type": "string",
+      "title": "Statement Importer read-only key",
+      "description": "Generate this key in Statement Importer > API / MCP. It stays on this computer.",
+      "sensitive": true,
+      "required": true
+    }
+  },
+  "compatibility": {
+    "platforms": ["darwin", "win32"],
+    "runtimes": { "node": ">=18.0.0" }
+  }
+}
