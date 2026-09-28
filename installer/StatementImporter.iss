@@ -1,6 +1,8 @@
 ; Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0
 #define MyAppName "Statement Importer"
-#define MyAppVersion "1.6.3"
+#ifndef MyAppVersion
+  #define MyAppVersion "1.6.4"
+#endif
 #define MyAppPublisher "Harsh"
 #define MyAppExeName "StatementImporter.exe"
 
@@ -24,7 +26,7 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0.17763
 OutputDir=..\dist
-OutputBaseFilename=StatementImporter-1.6.3-Setup-x64
+OutputBaseFilename=StatementImporter-{#MyAppVersion}-Setup-x64
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
