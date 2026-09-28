@@ -5,7 +5,7 @@
 
 Statement Importer releases must not be represented as signed until a trusted Authenticode signature has been applied and independently verified. Check each GitHub release for its actual signing status.
 
-The [macOS beta prerelease](https://github.com/harsh-91/statement-importer/releases/tag/v1.6.2-mac-beta.1) is ad hoc signed for local execution, without Apple Developer ID signing or notarization. Its Apple Silicon and Intel ZIPs include SHA-256 checksums. It is a manual beta distribution.
+The [macOS beta prerelease](https://github.com/harsh-91/statement-importer/releases/tag/v1.6.3-mac-beta.1) is ad hoc signed for local execution, without Apple Developer ID signing or notarization. Its Apple Silicon and Intel ZIPs include SHA-256 checksums. The in-app Updates control verifies and reveals the ZIP; replacing the app remains manual.
 
 The primary release route is now Microsoft Store MSIX distribution. Microsoft signs an accepted MSIX package during Store publishing, so this repository never stores a private signing key.
 
@@ -24,7 +24,7 @@ The SignPath Foundation application was not approved at the project's current ad
 - Authenticode signatures and timestamps must be verified before upload.
 - Unsigned historical releases remain clearly identified as unsigned.
 - MSIX installations use Microsoft Store updates and disable the legacy installer updater.
-- Legacy installations retain strict SHA-256 and Authenticode checks; they are not represented as Store-signed.
+- Legacy installations verify the official GitHub asset digest and release SHA-256 before enabling the installer button. Signed installers must have a valid SignPath Foundation Authenticode signature; invalid or unexpected signatures are blocked. Unsigned beta installers are labeled and require an explicit click to open.
 - Update installation is always initiated by the user; automatic checks never imply automatic download or installation.
 
 ## Privacy policy

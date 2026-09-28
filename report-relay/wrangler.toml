@@ -1,0 +1,11 @@
+name = "statement-importer-report-relay"
+main = "src/index.js"
+compatibility_date = "2026-09-28"
+
+[vars]
+GITHUB_REPOSITORY = "harsh-91/statement-importer-bug-reports"
+
+[[ratelimits]]
+name = "REPORT_LIMITER"
+namespace_id = "1001"
+simple = { limit = 3, period = 60 }

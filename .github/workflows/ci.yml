@@ -27,3 +27,5 @@ jobs:
         run: python -m unittest discover -s tests -v
       - name: Compile Python sources
         run: python -m compileall -q app.py desktop.py setup_launcher.py statement_importer scripts tests
+      - name: Test private report receiver
+        run: node --test report-relay/test/index.test.js

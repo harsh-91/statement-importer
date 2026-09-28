@@ -4,12 +4,14 @@ from __future__ import annotations
 import argparse
 import csv
 import io
+import json
 import secrets
 import time
 import sys
 import threading
 import subprocess
 import webbrowser
+import zipfile
 from pathlib import Path
 
 import psycopg
@@ -45,7 +47,7 @@ from statement_importer.updater import (
 from statement_importer.version import __version__
 from statement_importer.windows_package import is_msix_package
 from statement_importer.diagnostics import (
-    create_diagnostic_bundle, open_report_folder, open_support_draft,
+    create_diagnostic_bundle, open_report_folder, send_bug_report, submission_diagnostics,
     record_setup_event, REPORT_DIR, run_diagnostics, start_setup_run,
 )
 
@@ -126,7 +128,7 @@ def index():
         return redirect(url_for("setup_database"))
     return render_template(
         "index.html", results=None, counts=counts, stats=dashboard_stats(),
-        update=None if is_msix_package() or sys.platform == "darwin" else cached_update(), app_version=__version__,
+        update=None if is_msix_package() else cached_update(), app_version=__version__,
     )
 
 
@@ -272,19 +274,12 @@ def upload_statements():
         return redirect(url_for("setup_database"))
     return render_template(
         "index.html", results=results, counts=counts, stats=dashboard_stats(), batch_id=batch_id,
-        update=None if is_msix_package() or sys.platform == "darwin" else cached_update(), app_version=__version__,
+        update=None if is_msix_package() else cached_update(), app_version=__version__,
     )
 
 
 @app.route("/updates", methods=["GET", "POST"])
 def updates():
-    if sys.platform == "darwin":
-        if request.method == "POST":
-            abort(400, "Mac beta updates are installed manually from the official release page")
-        return render_template(
-            "updates.html", app_version=__version__, update=None, ready=None,
-            automatic=False, message=None, error=None, store_managed=False, mac_beta=True,
-        )
     if is_msix_package():
         if request.method == "POST":
             abort(400, "Microsoft Store manages updates for this installation")
@@ -312,7 +307,8 @@ def updates():
                 message = f"Version {ready['version']} downloaded and verified."
             elif action == "install":
                 launch_verified_update()
-                message = "The verified installer is open. Follow its upgrade wizard."
+                message = ("The verified Mac ZIP is selected in Finder. Extract it, then replace the app in Applications."
+                           if sys.platform == "darwin" else "The verified installer is open. Follow its upgrade wizard.")
             else:
                 abort(400, "Unknown update action")
         if result is None:
@@ -328,7 +324,7 @@ def updates():
         ready = verified_update()
     return render_template(
         "updates.html", app_version=__version__, update=result, ready=ready,
-        automatic=automatic, message=message, error=error, store_managed=False,
+        automatic=automatic, message=message, error=error, store_managed=False, mac_beta=sys.platform == "darwin",
     )
 
 
@@ -425,6 +421,7 @@ def diagnostics():
     checks = run_diagnostics()
     error = None
     message = None
+    issue_url = None
     bundle = None
     stored_bundle = session.get("diagnostic_bundle")
     if stored_bundle:
@@ -442,18 +439,26 @@ def diagnostics():
             elif action == "folder":
                 open_report_folder()
                 message = "The diagnostic report folder is open."
-            elif action == "email":
+            elif action == "send":
                 if not bundle:
                     raise ValueError("Create a diagnostic bundle first.")
-                open_support_draft(bundle)
-                message = "Your report folder and an email draft are open. Attach the ZIP file, add what happened, review, and send."
+                if request.form.get("consent") != "yes":
+                    raise ValueError("Review the report and confirm before sending.")
+                issue_url = send_bug_report(bundle, request.form.get("description", ""))
+                message = "Bug report sent to GitHub triage."
             else:
                 abort(400, "Unknown diagnostic action")
-        except (OSError, ValueError) as exception:
+        except (OSError, ValueError, KeyError, zipfile.BadZipFile) as exception:
             error = str(exception)
+    preview = None
+    if bundle:
+        try:
+            preview = json.dumps(submission_diagnostics(bundle), indent=2)
+        except (OSError, ValueError, KeyError, zipfile.BadZipFile):
+            error = "The saved report could not be read. Create a new report."
     return render_template(
         "diagnostics.html", checks=checks, bundle=bundle,
-        message=message, error=error, app_version=__version__,
+        message=message, error=error, app_version=__version__, preview=preview, issue_url=issue_url,
     )
 
 
@@ -497,7 +502,7 @@ def main():
         print(table_counts())
         return
     try:
-        if sys.platform != "darwin":
+        if not is_msix_package():
             start_background_check(bool(get_setting("automatic_update_checks", False)))
     except (ConfigError, psycopg.Error):
         pass

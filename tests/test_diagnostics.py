@@ -1,5 +1,6 @@
 # Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0
 import json
+import io
 import tempfile
 import unittest
 import zipfile
@@ -47,7 +48,8 @@ class DiagnosticTests(unittest.TestCase):
         fake_checks = [{"name": "PostgreSQL tools", "status": "pass", "detail": "Ready", "action": ""}]
         fake_bundle = Path.home() / "Documents" / "Statement Importer Reports" / "report.zip"
         with patch.object(web, "run_diagnostics", return_value=fake_checks), \
-             patch.object(web, "create_diagnostic_bundle", return_value=fake_bundle):
+             patch.object(web, "create_diagnostic_bundle", return_value=fake_bundle), \
+             patch.object(web, "submission_diagnostics", return_value={"report_id": "SI-test"}):
             response = client.post("/diagnostics", data={"csrf_token": "test-token", "action": "create"})
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"Diagnostic bundle created", response.data)
@@ -68,15 +70,56 @@ class DiagnosticTests(unittest.TestCase):
         self.assertEqual(response.json["diagnostics"], "/diagnostics")
         self.assertTrue(any(call.args[1] == "failed" for call in record.call_args_list))
 
-    def test_support_draft_does_not_expose_local_report_path(self):
-        bundle = Path.home() / "Documents" / "Statement Importer Reports" / "safe-report.zip"
-        with patch.object(diagnostics, "open_report_folder"), patch.object(diagnostics.webbrowser, "open") as opener:
-            diagnostics.open_support_draft(bundle)
-            self.assertIn("mailto:harshnair02@hotmail.com", opener.call_args.args[0])
-        draft_url = opener.call_args.args[0]
-        self.assertIn("safe-report.zip", draft_url)
-        self.assertNotIn("Documents", draft_url)
-        self.assertNotIn(Path.home().name, draft_url)
+    def test_send_requires_review_and_uses_private_receiver(self):
+        client = web.app.test_client()
+        with client.session_transaction() as session:
+            session["csrf_token"] = "test-token"
+            session["diagnostic_bundle"] = str(diagnostics.REPORT_DIR / "report.zip")
+        report = {"report_id": "SI-20260928-120000-ABC123", "application_version": "1.6.2", "system": {}, "checks": []}
+        with patch.object(web.Path, "exists", return_value=True), \
+             patch.object(web, "run_diagnostics", return_value=[]), \
+             patch.object(web, "submission_diagnostics", return_value=report), \
+             patch.object(web, "send_bug_report", return_value="https://github.com/harsh-91/statement-importer-bug-reports/issues/1") as sender:
+            denied = client.post("/diagnostics", data={"csrf_token": "test-token", "action": "send", "description": "Setup fails every time"})
+            self.assertIn(b"confirm before sending", denied.data)
+            self.assertFalse(sender.called)
+            accepted = client.post("/diagnostics", data={"csrf_token": "test-token", "action": "send", "description": "Setup fails every time", "consent": "yes"})
+            self.assertIn(b"Bug report sent", accepted.data)
+            sender.assert_called_once()
+
+    def test_submission_excludes_bundle_events_and_evidence(self):
+        with tempfile.TemporaryDirectory() as directory:
+            bundle = Path(directory) / "report.zip"
+            with zipfile.ZipFile(bundle, "w") as archive:
+                archive.writestr("diagnostic-report.json", json.dumps({
+                    "report_id": "SI-20260928-120000-ABC123", "application_version": "1.6.2",
+                    "system": {"os": "Windows", "release": "11", "architecture": "AMD64"},
+                    "checks": [{"name": "Connection", "status": "fail", "detail": "password=hunter2"}],
+                    "evidence": {"secret": "private"},
+                }))
+                archive.writestr("setup-events.jsonl", '{"message":"sensitive event"}')
+            payload = diagnostics.submission_diagnostics(bundle)
+            serialized = json.dumps(payload)
+            self.assertNotIn("hunter2", serialized)
+            self.assertNotIn("sensitive event", serialized)
+            self.assertNotIn("private", serialized)
+
+    def test_submission_posts_only_reviewed_fields(self):
+        with tempfile.TemporaryDirectory() as directory:
+            bundle = Path(directory) / "report.zip"
+            with zipfile.ZipFile(bundle, "w") as archive:
+                archive.writestr("diagnostic-report.json", json.dumps({
+                    "report_id": "SI-20260928-120000-ABC123", "application_version": "1.6.2",
+                    "system": {"os": "Windows"}, "checks": [], "evidence": {"private": "do not send"},
+                }))
+            reply = io.BytesIO(b'{"issue_url":"https://github.com/harsh-91/statement-importer-bug-reports/issues/7"}')
+            with patch.object(diagnostics, "_report_endpoint", return_value="https://example.workers.dev/report"), \
+                 patch.object(diagnostics.REPORT_OPENER, "open", return_value=reply) as opener:
+                issue_url = diagnostics.send_bug_report(bundle, "Setup fails on launch")
+            self.assertTrue(issue_url.endswith("/issues/7"))
+            posted = json.loads(opener.call_args.args[0].data)
+            self.assertEqual(posted["description"], "Setup fails on launch")
+            self.assertNotIn("evidence", posted["diagnostics"])
 
 
 if __name__ == "__main__":

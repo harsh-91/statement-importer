@@ -25,9 +25,9 @@ On first launch, choose **Set up storage and continue**. The app creates an isol
 
 ## macOS beta
 
-The [macOS beta prerelease](https://github.com/harsh-91/statement-importer/releases/tag/v1.6.2-mac-beta.1) has separate Apple Silicon and Intel app ZIPs and SHA-256 checksums. It requires macOS 15 or newer, an unlocked login Keychain, and PostgreSQL 17 tools from Homebrew or Postgres.app. See [MACOS_BETA.md](MACOS_BETA.md) for installation details.
+The [macOS beta prerelease](https://github.com/harsh-91/statement-importer/releases/tag/v1.6.3-mac-beta.1) has separate Apple Silicon and Intel app ZIPs and SHA-256 checksums. It requires macOS 15 or newer, an unlocked login Keychain, and PostgreSQL 17 tools from Homebrew or Postgres.app. See [MACOS_BETA.md](MACOS_BETA.md) for installation details.
 
-These builds are ad hoc signed, without Apple Developer ID signing or notarization. They passed Mac runner tests and bundle signature verification, but the graphical app has not yet been exercised on a physical Mac. Make a backup before relying on this beta. Mac updates are manual.
+These builds are ad hoc signed, without Apple Developer ID signing or notarization. They passed Mac runner tests and bundle signature verification, but the graphical app has not yet been exercised on a physical Mac. Make a backup before relying on this beta. The in-app Updates control can check, download, verify, and reveal a newer beta ZIP; replacing the app remains manual.
 
 ## Supported statements
 
@@ -46,7 +46,7 @@ Open **Diagnostics** in the app, or use the troubleshooting link on the database
 
 Choose **Create privacy-safe report** to save a ZIP under `Documents\Statement Importer Reports`. It contains a system summary, check results and recent setup-stage events. It excludes statement files, transactions, database contents, passwords, API keys, encrypted configuration values and PostgreSQL log contents.
 
-Choose **Prepare email to support** to open the report folder and a draft addressed to `harshnair02@hotmail.com`. The user must review the ZIP, attach it and send the message; the app never uploads or sends diagnostics automatically. Diagnostics work offline, while sending email requires the user's configured email application and internet access.
+Review the diagnostic preview, describe the problem, confirm, then choose **Send bug report**. The app sends the description and the displayed diagnostic fields to a private GitHub triage repository through the report relay. The ZIP, setup event log, statements and transactions stay local. Report submission requires internet access; local checks and ZIP creation work offline.
 
 ## Database
 
@@ -121,4 +121,4 @@ Statement Importer releases from version 1.3.1 are open-source software under th
 
 ## Public distribution
 
-Release artifacts must be checked individually: the release page and [code signing policy](CODE_SIGNING.md) state whether a build is signed. Unsigned builds may trigger Windows SmartScreen and cannot be installed by the in-app updater. Always verify the supplied SHA-256 checksum. This software is suitable for personal use and controlled beta testing, not regulated financial processing without independent security review and clean-machine certification.
+Release artifacts must be checked individually: the release page and [code signing policy](CODE_SIGNING.md) state whether a build is signed. Unsigned builds may trigger Windows SmartScreen. The in-app updater verifies the GitHub asset digest and release SHA-256, labels unsigned installers, and opens them only after an explicit click. This software is suitable for personal use and controlled beta testing, not regulated financial processing without independent security review and clean-machine certification.

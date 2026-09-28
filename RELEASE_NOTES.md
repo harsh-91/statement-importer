@@ -1,9 +1,9 @@
 <!-- Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0 -->
-# Statement Importer 1.6.2
+# Statement Importer 1.6.3
 
 Created by **Harsh** ([@harsh-91](https://github.com/harsh-91)) · Made in India 🇮🇳
 
-This release fixes a first-run database setup hang in the Microsoft Store build. PostgreSQL startup now completes without waiting on output pipes held open by the server process.
+This release replaces the diagnostic support email draft with a direct, opt-in bug report flow for Windows and macOS. Users review the submitted fields and describe the issue before sending. A rate-limited Cloudflare receiver creates a private GitHub triage issue; no GitHub account is needed. Statement files, transactions, diagnostic ZIPs and setup event logs are not uploaded.
 
 ## Highlights
 
@@ -16,7 +16,7 @@ This release fixes a first-run database setup hang in the Microsoft Store build.
 - Built-in database diagnostics identify PostgreSQL discovery, managed-state, local-port, saved-connection, runtime and storage failures.
 - Setup stages and errors are retained in a small rotating, privacy-redacted local event log.
 - Users can create a reviewable support ZIP without statements, transactions, database contents, credentials, protected settings or raw PostgreSQL logs.
-- **Prepare email to support** opens the report folder and an addressed draft; attaching and sending always remain explicit user actions.
+- **Send bug report** submits the displayed diagnostic fields and the user's description to private GitHub triage after explicit confirmation.
 
 - Upgrade preparation shows elapsed time and verifies the executable is released before replacing it.
 - Setup asks the old app to close normally, then asks permission before forcing a background copy to close. Only the selected installation path is targeted.

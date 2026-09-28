@@ -15,4 +15,4 @@ Do not publish security vulnerabilities, credentials, bank statements, account n
 
 The application is offline-first, binds services to localhost, and does not include telemetry. Users remain responsible for PostgreSQL security, backups, operating-system access, and compliance obligations.
 
-The built-in diagnostic utility creates its report locally and never uploads it automatically. Reports contain controlled system checks and redacted setup-stage events; they exclude statements, transaction records, database contents, credentials, protected configuration values and raw PostgreSQL logs. Users must review and explicitly attach and send a report.
+The built-in diagnostic utility creates its report locally and never uploads it automatically. Reports contain controlled system checks and redacted setup-stage events; they exclude statements, transaction records, database contents, credentials, protected configuration values and raw PostgreSQL logs. The user reviews the exact submitted fields, supplies a description and explicitly confirms before sending to private GitHub triage. The ZIP and setup event log are not uploaded.

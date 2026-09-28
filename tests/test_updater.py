@@ -14,7 +14,27 @@ def response(payload: bytes):
     return io.BytesIO(payload)
 
 
+@patch.object(updater.sys, "platform", "win32")
 class UpdateMetadataTests(unittest.TestCase):
+    def test_mac_beta_selects_newest_architecture_release(self):
+        def release(version, beta):
+            name = f"StatementImporter-{version}-macOS-arm64-beta.zip"
+            return {"tag_name": f"v{version}-mac-beta.{beta}", "html_url": "https://github.com/harsh-91/statement-importer/releases",
+                    "assets": [{"name": name, "state": "uploaded", "size": 3, "digest": "sha256:" + "a" * 64,
+                                "browser_download_url": "https://github.com/harsh-91/statement-importer/releases/download/a/file.zip"},
+                               {"name": name + ".sha256", "state": "uploaded", "size": 80,
+                                "browser_download_url": "https://github.com/harsh-91/statement-importer/releases/download/a/file.sha256"}]}
+        with tempfile.TemporaryDirectory() as folder, \
+             patch.object(updater.sys, "platform", "darwin"), \
+             patch.object(updater.platform, "machine", return_value="arm64"), \
+             patch.object(updater, "__version__", "1.6.2"), \
+             patch.object(updater, "CACHE_PATH", Path(folder) / "latest.json"), \
+             patch.object(updater, "_open", return_value=response(json.dumps([release("1.6.2", 1), release("1.6.3", 2)]).encode())):
+            result = updater.check_latest_release()
+        self.assertEqual(result["latest_version"], "1.6.3")
+        self.assertEqual(result["platform"], "mac")
+        self.assertTrue(result["installer"]["name"].endswith("arm64-beta.zip"))
+
     def test_versions_are_strict_and_ordered(self):
         self.assertEqual(updater._version_tuple("v1.3.0"), (1, 3, 0))
         self.assertGreater(updater._version_tuple("1.10.0"), updater._version_tuple("1.9.9"))
@@ -60,7 +80,29 @@ class UpdateMetadataTests(unittest.TestCase):
             self.assertEqual(result["latest_version"], "1.4.0")
 
 
+@patch.object(updater.sys, "platform", "win32")
 class VerifiedDownloadTests(unittest.TestCase):
+    def test_unsigned_windows_beta_needs_hash_and_explicit_launch(self):
+        payload = b"unsigned official beta"
+        digest = hashlib.sha256(payload).hexdigest().upper()
+        name = "StatementImporter-1.4.0-Setup-x64.exe"
+        release = {"update_available": True, "latest_version": "1.4.0", "checksums_url": "https://github.com/checksums",
+                   "installer": {"name": name, "url": "https://github.com/installer", "size": len(payload),
+                                 "digest": f"sha256:{digest.lower()}"}}
+        with tempfile.TemporaryDirectory() as folder, \
+             patch.object(updater, "UPDATE_DIR", Path(folder)), \
+             patch.object(updater, "READY_PATH", Path(folder) / "ready.json"), \
+             patch.object(updater, "__version__", "1.3.5"), \
+             patch.object(updater, "check_latest_release", return_value=release), \
+             patch.object(updater, "_open", side_effect=[response(f"{digest}  {name}\n".encode()), response(payload)]), \
+             patch.object(updater, "authenticode_status", return_value={"status": "NotSigned", "subject": "", "thumbprint": ""}), \
+             patch.object(updater.subprocess, "Popen") as launch:
+            ready = updater.download_verified_update()
+            self.assertEqual(ready["signature"]["status"], "NotSigned")
+            launch.assert_not_called()
+            updater.launch_verified_update()
+            launch.assert_called_once()
+
     def test_download_requires_hash_and_signature_before_becoming_ready(self):
         payload = b"signed installer test bytes"
         digest = hashlib.sha256(payload).hexdigest().upper()
