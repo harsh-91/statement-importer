@@ -29,3 +29,9 @@ jobs:
         run: python -m compileall -q app.py desktop.py setup_launcher.py statement_importer scripts tests
       - name: Test private report receiver
         run: node --test report-relay/test/index.test.js
+      - name: Validate Claude Desktop bridge
+        run: |
+          node --check claude-desktop/server/index.js
+          node --test claude-desktop/test/bridge.test.js
+          python scripts/build_claude_extension.py
+          python -c "from zipfile import ZipFile; z=ZipFile('dist/NeonLedger-ClaudeDesktop.mcpb'); assert set(z.namelist()) == {'manifest.json', 'server/index.js'}"
