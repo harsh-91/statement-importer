@@ -1,0 +1,71 @@
+# Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0
+name: Build macOS beta
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "app.py"
+      - "desktop.py"
+      - "statement_importer/**"
+      - "templates/**"
+      - "static/**"
+      - "requirements.txt"
+      - "tests/test_macos.py"
+      - ".github/workflows/macos-beta.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            architecture: arm64
+          - runner: macos-15-intel
+            architecture: x64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install -r requirements.txt
+          python -m pip install pyinstaller==6.22.3
+      - name: Run portable tests
+        run: |
+          python -m unittest discover -s tests -p 'test_macos.py' -v
+          python -m unittest discover -s tests -p 'test_parsers.py' -v
+      - name: Build native Mac app
+        run: |
+          python -m PyInstaller --noconfirm --clean --onedir --windowed \
+            --name "Statement Importer" \
+            --osx-bundle-identifier "com.harsh91.statement-importer" \
+            --add-data "templates:templates" --add-data "static:static" \
+            --collect-all webview --hidden-import keyring.backends.macOS \
+            desktop.py
+          test -d "dist/Statement Importer.app"
+          codesign --verify --deep --strict --verbose=2 "dist/Statement Importer.app"
+      - name: Package unsigned beta
+        run: |
+          VERSION=$(python -c 'from statement_importer.version import __version__; print(__version__)')
+          NAME="StatementImporter-${VERSION}-macOS-${{ matrix.architecture }}-beta.zip"
+          ditto -c -k --sequesterRsrc --keepParent "dist/Statement Importer.app" "dist/${NAME}"
+          shasum -a 256 "dist/${NAME}" > "dist/${NAME}.sha256"
+      - name: Upload beta artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: statement-importer-macos-${{ matrix.architecture }}
+          path: |
+            dist/StatementImporter-*-macOS-${{ matrix.architecture }}-beta.zip
+            dist/StatementImporter-*-macOS-${{ matrix.architecture }}-beta.zip.sha256
+          if-no-files-found: error

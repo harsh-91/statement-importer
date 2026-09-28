@@ -108,6 +108,7 @@ def friendly_database_error(exception: Exception) -> str:
 
 
 app.jinja_env.globals["csrf_token"] = csrf_token
+app.jinja_env.globals["macos"] = sys.platform == "darwin"
 
 
 def current_counts() -> dict[str, int] | None:
@@ -125,7 +126,7 @@ def index():
         return redirect(url_for("setup_database"))
     return render_template(
         "index.html", results=None, counts=counts, stats=dashboard_stats(),
-        update=None if is_msix_package() else cached_update(), app_version=__version__,
+        update=None if is_msix_package() or sys.platform == "darwin" else cached_update(), app_version=__version__,
     )
 
 
@@ -271,12 +272,19 @@ def upload_statements():
         return redirect(url_for("setup_database"))
     return render_template(
         "index.html", results=results, counts=counts, stats=dashboard_stats(), batch_id=batch_id,
-        update=None if is_msix_package() else cached_update(), app_version=__version__,
+        update=None if is_msix_package() or sys.platform == "darwin" else cached_update(), app_version=__version__,
     )
 
 
 @app.route("/updates", methods=["GET", "POST"])
 def updates():
+    if sys.platform == "darwin":
+        if request.method == "POST":
+            abort(400, "Mac beta updates are installed manually from the official release page")
+        return render_template(
+            "updates.html", app_version=__version__, update=None, ready=None,
+            automatic=False, message=None, error=None, store_managed=False, mac_beta=True,
+        )
     if is_msix_package():
         if request.method == "POST":
             abort(400, "Microsoft Store manages updates for this installation")
@@ -489,7 +497,8 @@ def main():
         print(table_counts())
         return
     try:
-        start_background_check(bool(get_setting("automatic_update_checks", False)))
+        if sys.platform != "darwin":
+            start_background_check(bool(get_setting("automatic_update_checks", False)))
     except (ConfigError, psycopg.Error):
         pass
     if args.open_browser:

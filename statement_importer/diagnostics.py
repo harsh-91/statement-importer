@@ -121,11 +121,11 @@ def _port_reachable(port: int) -> bool:
 
 def run_diagnostics() -> list[dict[str, str]]:
     checks: list[dict[str, str]] = []
-    is_windows = os.name == "nt"
+    supported = os.name == "nt" or sys.platform == "darwin"
     checks.append(_check(
-        "Windows compatibility", "pass" if is_windows else "warn",
+        "Operating system", "pass" if supported else "warn",
         f"{platform.system()} {platform.release()} build {platform.version()} ({platform.machine()})",
-        "Statement Importer is supported on modern 64-bit Windows." if not is_windows else "",
+        "Statement Importer supports modern 64-bit Windows and macOS." if not supported else "",
     ))
     checks.append(_check(
         "Application runtime", "pass",
@@ -162,7 +162,7 @@ def run_diagnostics() -> list[dict[str, str]]:
         checks.append(_check(
             "Managed database port", "pass" if reachable else "fail",
             f"Local PostgreSQL port {port} is {'accepting connections' if reachable else 'not accepting connections'}.",
-            "Retry setup; if it still fails, restart Windows and create a report." if not reachable else "",
+            "Retry setup; if it still fails, restart the computer and create a report." if not reachable else "",
         ))
 
     try:

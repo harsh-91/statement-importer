@@ -10,17 +10,24 @@ from pathlib import Path
 
 from psycopg import sql
 
-from .config import load_settings
+from .config import CONFIG_DIR, load_settings
 from .database import connect
+from .local_postgres import find_postgres_bin
 
 
-BACKUP_DIR = Path(os.environ.get("LOCALAPPDATA", Path.home())) / "StatementImporter" / "backups"
+BACKUP_DIR = (CONFIG_DIR if os.name != "nt" else
+              Path(os.environ.get("LOCALAPPDATA", Path.home())) / "StatementImporter") / "backups"
 
 
 def _postgres_tool(name: str) -> Path:
     executable = shutil.which(name)
     if executable:
         return Path(executable)
+    if os.name != "nt":
+        candidate = find_postgres_bin() / name
+        if candidate.exists():
+            return candidate
+        raise RuntimeError(f"{name} was not found. Install PostgreSQL client tools first.")
     root = Path(os.environ.get("ProgramFiles", "C:/Program Files")) / "PostgreSQL"
     candidates = sorted(root.glob(f"*/bin/{name}.exe"), reverse=True)
     if not candidates:
@@ -31,6 +38,8 @@ def _postgres_tool(name: str) -> Path:
 def create_backup() -> Path:
     settings = load_settings()
     BACKUP_DIR.mkdir(parents=True, exist_ok=True)
+    if os.name != "nt":
+        BACKUP_DIR.chmod(0o700)
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     target = BACKUP_DIR / f"statement-importer-{stamp}.backup"
     partial = target.with_suffix(".partial")

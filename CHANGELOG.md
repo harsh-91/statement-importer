@@ -1,7 +1,7 @@
 <!-- Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0 -->
 # Changelog
 
-## 1.6.2 - 2026-09-27 (prepared, not released)
+## 1.6.2 - 2026-09-28
 
 - Fixed first-run local PostgreSQL setup hanging after the server was ready by preventing the long-lived server process from inheriting captured command-output pipes.
 - Added regression tests and verified fresh and repeated database provisioning in an isolated local profile.

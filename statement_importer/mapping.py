@@ -13,10 +13,11 @@ from pathlib import Path
 from typing import Any
 
 from .parsers import StatementError, _load_workbook, clean_text, date_value, fingerprint, money, normalized_text
-from .config import ConfigError, protect_bytes, unprotect_bytes
+from .config import CONFIG_DIR, ConfigError, protect_bytes, unprotect_bytes
 
 
-PENDING_DIR = Path(os.environ.get("LOCALAPPDATA", Path.home())) / "StatementImporter" / "pending"
+PENDING_DIR = (CONFIG_DIR if os.name != "nt" else
+               Path(os.environ.get("LOCALAPPDATA", Path.home())) / "StatementImporter") / "pending"
 PENDING_TTL = timedelta(hours=24)
 MAX_MAPPED_ROWS = 200_000
 MAX_MAPPED_COLUMNS = 256
@@ -50,7 +51,11 @@ def save_pending(data: bytes, filename: str) -> str:
     cleanup_pending()
     token = secrets.token_urlsafe(24)
     PENDING_DIR.mkdir(parents=True, exist_ok=True)
+    if os.name != "nt":
+        PENDING_DIR.chmod(0o700)
     (PENDING_DIR / f"{token}.bin").write_bytes(protect_bytes(data))
+    if os.name != "nt":
+        (PENDING_DIR / f"{token}.bin").chmod(0o600)
     (PENDING_DIR / f"{token}.json").write_text(json.dumps({
         "filename": Path(filename).name,
         "created_at": datetime.now(timezone.utc).isoformat(),

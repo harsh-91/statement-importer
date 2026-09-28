@@ -5,18 +5,37 @@ import base64
 import ctypes
 import json
 import os
+import sys
 from ctypes import wintypes
 from pathlib import Path
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-CONFIG_DIR = Path(os.environ.get("APPDATA", Path.home())) / "StatementImporter"
+CONFIG_DIR = (Path.home() / "Library" / "Application Support" / "StatementImporter"
+              if sys.platform == "darwin" else Path(os.environ.get("APPDATA", Path.home())) / "StatementImporter")
 CONFIG_PATH = CONFIG_DIR / "config.json"
 REQUIRED = {"POSTGRES_HOST", "POSTGRES_PORT", "POSTGRES_DB", "POSTGRES_USER", "POSTGRES_PASSWORD"}
 
 
 class ConfigError(RuntimeError):
     pass
+
+
+def _mac_key() -> bytes:
+    """Keep the data-encryption key in the current user's macOS Keychain."""
+    import keyring
+    from cryptography.fernet import Fernet
+
+    service = "com.harsh91.statement-importer"
+    account = "local-data-key"
+    try:
+        value = keyring.get_password(service, account)
+        if value is None:
+            value = Fernet.generate_key().decode("ascii")
+            keyring.set_password(service, account, value)
+        return value.encode("ascii")
+    except Exception as error:
+        raise ConfigError("Mac Keychain is unavailable; unlock your login Keychain and retry") from error
 
 
 class DATA_BLOB(ctypes.Structure):
@@ -29,8 +48,11 @@ def _blob(data: bytes) -> tuple[DATA_BLOB, ctypes.Array]:
 
 
 def _protect(value: str) -> str:
+    if sys.platform == "darwin":
+        from cryptography.fernet import Fernet
+        return "fernet:" + Fernet(_mac_key()).encrypt(value.encode("utf-8")).decode("ascii")
     if os.name != "nt":
-        return base64.b64encode(value.encode("utf-8")).decode("ascii")
+        raise ConfigError("Protected storage is unavailable on this operating system")
     source, keepalive = _blob(value.encode("utf-8"))
     output = DATA_BLOB()
     if not ctypes.windll.crypt32.CryptProtectData(
@@ -45,9 +67,17 @@ def _protect(value: str) -> str:
 
 
 def _unprotect(value: str) -> str:
+    if sys.platform == "darwin":
+        from cryptography.fernet import Fernet, InvalidToken
+        if not value.startswith("fernet:"):
+            raise ConfigError("The saved secret is not protected by this Mac's Keychain")
+        try:
+            return Fernet(_mac_key()).decrypt(value.removeprefix("fernet:").encode("ascii")).decode("utf-8")
+        except (InvalidToken, ValueError) as error:
+            raise ConfigError("The saved secret could not be decrypted with this Mac's Keychain") from error
     protected = base64.b64decode(value)
     if os.name != "nt":
-        return protected.decode("utf-8")
+        raise ConfigError("Protected storage is unavailable on this operating system")
     source, keepalive = _blob(protected)
     output = DATA_BLOB()
     if not ctypes.windll.crypt32.CryptUnprotectData(
@@ -61,7 +91,7 @@ def _unprotect(value: str) -> str:
 
 
 def protect_bytes(value: bytes) -> bytes:
-    """Protect local temporary data for the current Windows user."""
+    """Protect local temporary data for the current OS user."""
     encoded = base64.b64encode(value).decode("ascii")
     return _protect(encoded).encode("ascii")
 
@@ -124,6 +154,10 @@ def save_settings(settings: dict[str, str]) -> None:
     if missing:
         raise ConfigError(f"Missing connection settings: {', '.join(missing)}")
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    if os.name != "nt":
+        CONFIG_DIR.chmod(0o700)
     payload = {key: settings[key] for key in REQUIRED if key != "POSTGRES_PASSWORD"}
     payload["POSTGRES_PASSWORD_PROTECTED"] = _protect(settings["POSTGRES_PASSWORD"])
     CONFIG_PATH.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    if os.name != "nt":
+        CONFIG_PATH.chmod(0o600)

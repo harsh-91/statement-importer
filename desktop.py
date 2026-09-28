@@ -14,7 +14,7 @@ import psycopg
 from werkzeug.serving import make_server
 
 from app import app
-from statement_importer.config import ConfigError
+from statement_importer.config import CONFIG_DIR, ConfigError
 from statement_importer.access import get_setting
 from statement_importer.database import ensure_schema
 from statement_importer.local_postgres import LocalPostgresError, start_managed_postgres_if_present
@@ -24,6 +24,7 @@ from statement_importer.windows_package import is_msix_package
 
 
 _mutex_handle = None
+_mac_lock_file = None
 _shutdown_event_handle = None
 SHUTDOWN_EVENT_NAME = "Local\\StatementImporterShutdown"
 EVENT_MODIFY_STATE = 0x0002
@@ -44,7 +45,19 @@ def windows_api():
 
 
 def acquire_single_instance() -> bool:
-    global _mutex_handle
+    global _mutex_handle, _mac_lock_file
+    if sys.platform == "darwin":
+        import fcntl
+        CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+        CONFIG_DIR.chmod(0o700)
+        _mac_lock_file = (CONFIG_DIR / "desktop.lock").open("a+b")
+        try:
+            fcntl.flock(_mac_lock_file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            return True
+        except BlockingIOError:
+            _mac_lock_file.close()
+            _mac_lock_file = None
+            return False
     if not hasattr(ctypes, "windll"):
         return True
     _mutex_handle = windows_api().CreateMutexW(None, False, "Local\\StatementImporterDesktop")
@@ -134,7 +147,7 @@ def main():
                 start_managed_postgres_if_present()
                 show("Checking your database and tables...")
                 ensure_schema()
-                if not is_msix_package():
+                if sys.platform != "darwin" and not is_msix_package():
                     start_background_check(bool(get_setting("automatic_update_checks", False)))
                 window.load_url("http://127.0.0.1:8765/")
             except Exception as error:
