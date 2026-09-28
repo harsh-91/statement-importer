@@ -25,7 +25,7 @@ On first launch, choose **Set up storage and continue**. The app creates an isol
 
 ## macOS beta
 
-The [macOS beta prerelease](https://github.com/harsh-91/statement-importer/releases/tag/v1.6.3-mac-beta.1) has separate Apple Silicon and Intel app ZIPs and SHA-256 checksums. It requires macOS 15 or newer, an unlocked login Keychain, and PostgreSQL 17 tools from Homebrew or Postgres.app. See [MACOS_BETA.md](MACOS_BETA.md) for installation details.
+The [macOS beta prerelease](https://github.com/harsh-91/statement-importer/releases/tag/v1.6.4-mac-beta.1) has separate Apple Silicon and Intel app ZIPs and SHA-256 checksums. It requires macOS 15 or newer, an unlocked login Keychain, and PostgreSQL 17 tools from Homebrew or Postgres.app. See [MACOS_BETA.md](MACOS_BETA.md) for installation details.
 
 These builds are ad hoc signed, without Apple Developer ID signing or notarization. They passed Mac runner tests and bundle signature verification, but the graphical app has not yet been exercised on a physical Mac. Make a backup before relying on this beta. The in-app Updates control can check, download, verify, and reveal a newer beta ZIP; replacing the app remains manual.
 
