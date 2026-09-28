@@ -59,17 +59,19 @@ export default {
     if (!payload) return json({ error: "Invalid report" }, 400);
     if (!env.GITHUB_TOKEN || env.GITHUB_REPOSITORY !== REPOSITORY) return json({ error: "Receiver unavailable" }, 503);
     const { diagnostics, description } = payload;
+    const fence = String.fromCharCode(96).repeat(3);
     const issue = {
-      title: `[Bug] Statement Importer ${diagnostics.application_version} ${diagnostics.report_id}`,
-      body: `## User description\n\n${description}\n\n## Diagnostics\n\n\`\`\`json\n${JSON.stringify(diagnostics, null, 2).replaceAll("```", "` ` `")}\n\`\`\`\n`,
+      title: "[Bug] Statement Importer " + diagnostics.application_version + " " + diagnostics.report_id,
+      body: "## User description\n\n" + description + "\n\n## Diagnostics\n\n" + fence + "json\n" +
+        JSON.stringify(diagnostics, null, 2).replaceAll(fence, String.fromCharCode(96) + " " + String.fromCharCode(96) + " " + String.fromCharCode(96)) + "\n" + fence + "\n",
       labels: ["bug-report"],
     };
     let result;
     try {
-      result = await fetch(`https://api.github.com/repos/${REPOSITORY}/issues`, {
+      result = await fetch("https://api.github.com/repos/" + REPOSITORY + "/issues", {
         method: "POST",
         headers: {
-          authorization: `Bearer ${env.GITHUB_TOKEN}`,
+          authorization: "Bearer " + env.GITHUB_TOKEN,
           accept: "application/vnd.github+json",
           "content-type": "application/json",
           "user-agent": "statement-importer-report-relay",
@@ -80,7 +82,7 @@ export default {
     } catch { return json({ error: "GitHub unavailable" }, 502); }
     if (!result.ok) return json({ error: "GitHub rejected the report" }, 502);
     const created = await result.json();
-    if (typeof created.html_url !== "string" || !created.html_url.startsWith(`https://github.com/${REPOSITORY}/issues/`)) {
+    if (typeof created.html_url !== "string" || !created.html_url.startsWith("https://github.com/" + REPOSITORY + "/issues/")) {
       return json({ error: "Unexpected GitHub response" }, 502);
     }
     return json({ issue_url: created.html_url }, 201);
