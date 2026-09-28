@@ -68,6 +68,8 @@ Open **API / MCP** inside the app. Both services are disabled by default and bin
 
 Generate a read-only key and send it as `X-API-Key` or `Authorization: Bearer`.
 
+**Claude Desktop:** Its **Add custom connector** field requires a public HTTPS server and cannot use this local address. Use the [Neon Ledger local desktop extension](https://github.com/harsh-91/statement-importer/releases/download/v1.6.4/NeonLedger-ClaudeDesktop.mcpb) instead: open Claude Desktop → Settings → Extensions → Advanced settings → Install Extension, select the `.mcpb` file, and enter the read-only key from **API / MCP**. Keep Statement Importer running with MCP enabled. The extension forwards requests only to `127.0.0.1` and does not require Node.js to be installed separately. Build it locally with `python scripts/build_claude_extension.py`.
+
 Excel, Power BI, Tableau, and DBeaver may also connect directly to PostgreSQL and query `unified_bank_transactions`.
 
 ## Safety controls
