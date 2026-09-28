@@ -12,7 +12,7 @@
     <header>
       <p class="eyebrow">STEP 1 OF 2 · PREPARE STORAGE, THEN IMPORT STATEMENTS</p>
       <h1>Where should we save your statements?</h1>
-      <p class="intro">For most people this is one click. Statement Importer creates its own private PostgreSQL database on this computer and protects the generated password with Windows.</p>
+      <p class="intro">For most people this is one click. Statement Importer creates its own private PostgreSQL database on this computer and protects the generated password with {{ 'Mac Keychain' if macos else 'Windows' }}.</p>
     </header>
 
     {% if error %}<div class="banner error-banner">{{ error }}</div>{% endif %}
@@ -31,7 +31,7 @@
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="mode" value="automatic">
         <h2>Keep everything on this computer (recommended)</h2>
-        <p>No host names, ports, database names, users, or passwords to enter. The Microsoft Store package includes the required PostgreSQL tools; legacy builds can use an existing installation.</p>
+        <p>{% if macos %}Install PostgreSQL 17 with Homebrew or Postgres.app first. The app will create its own local database and credentials using those tools.{% else %}No host names, ports, database names, users, or passwords to enter. The Microsoft Store package includes the required PostgreSQL tools; legacy builds can use an existing installation.{% endif %}</p>
         <button type="submit">Set up storage and continue</button>
       </form>
     </section>
@@ -48,7 +48,7 @@
           <label><span>User</span><input name="user" value="{{ fields.POSTGRES_USER }}" required></label>
         </div>
         <label class="password-field"><span>Password</span><input type="password" name="password" autocomplete="new-password" required></label>
-        <p class="note">Use this option only if you already manage a PostgreSQL server. Each connection attempt has a five-second timeout; preparing tables may take longer. Your password is protected by Windows.</p>
+        <p class="note">Use this option only if you already manage a PostgreSQL server. Each connection attempt has a five-second timeout; preparing tables may take longer. Your password is protected by {{ 'Mac Keychain' if macos else 'Windows' }}.</p>
         <button type="submit">Connect and continue</button>
       </form>
     </details>

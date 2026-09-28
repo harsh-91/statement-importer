@@ -2,16 +2,16 @@ Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2
 
 STATEMENT IMPORTER - WINDOWS QUICK START
 
-RECOMMENDED: Install Neon Ledger from Microsoft Store after the listing is published.
-DEVELOPER/LEGACY INSTALLER: StatementImporter-1.6.0-Setup-x64.exe
+CURRENT DOWNLOAD: StatementImporter-1.6.2-Setup-x64.exe from the official GitHub v1.6.2 release.
+MICROSOFT STORE: Install from the Store after the listing is approved and published.
 
 1. Use 64-bit Windows 10 build 17763+ or Windows 11.
-2. Install from Microsoft Store. The Store package includes PostgreSQL tools, needs no administrator access, and receives signed Store updates.
+2. Download the current installer and SHA256SUMS.txt from the official GitHub release. Verify the SHA-256, then run setup manually. The installer is unsigned, so the in-app updater will not install it.
 3. Click Set up storage and continue. Watch the current step and elapsed time; the importer opens when ready. Advanced users may connect an existing PostgreSQL server instead.
 4. Select one or more bank statement files and click Reconcile and import.
 5. Refresh your database or DBeaver connection to see newly inserted rows.
 6. Open Backups & Access to create a verified backup and an optional read-only reporting login.
-7. Open Updates to confirm Store-managed updates. Legacy installations retain manual GitHub checks.
+7. Open Updates for manual GitHub release checks. After a Store installation, updates are managed by Microsoft Store.
 8. If database setup fails, open Diagnostics to run local checks and create a privacy-safe report ZIP. Review it, then use Prepare email to support.
 
 Supported statement structures:

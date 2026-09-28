@@ -18,7 +18,8 @@ from .config import CONFIG_DIR, _protect, _unprotect, save_settings
 from .database import ensure_schema, test_connection
 
 
-LOCAL_STATE_DIR = Path(os.environ.get("LOCALAPPDATA", CONFIG_DIR)) / "StatementImporter"
+LOCAL_STATE_DIR = (CONFIG_DIR if sys.platform == "darwin" else
+                   Path(os.environ.get("LOCALAPPDATA", CONFIG_DIR)) / "StatementImporter")
 MANAGED_ROOT = LOCAL_STATE_DIR / "managed-postgresql"
 DATA_DIR = MANAGED_ROOT / "data"
 LOG_PATH = MANAGED_ROOT / "postgresql.log"
@@ -44,22 +45,37 @@ def _version_key(path: Path) -> tuple[int, ...]:
 def find_postgres_bin() -> Path:
     override = os.environ.get("STATEMENT_IMPORTER_POSTGRES_BIN")
     packaged = Path(sys.executable).resolve().parent / "postgresql" / "bin"
-    for candidate in (Path(override).resolve() if override else None, packaged):
-        if candidate and all((candidate / name).exists() for name in ("initdb.exe", "pg_ctl.exe", "postgres.exe")):
+    suffix = ".exe" if os.name == "nt" else ""
+    candidates = [Path(override).resolve() if override else None, packaged]
+    if sys.platform == "darwin":
+        candidates.extend([
+            Path("/opt/homebrew/opt/postgresql@17/bin"),
+            Path("/usr/local/opt/postgresql@17/bin"),
+            Path("/Applications/Postgres.app/Contents/Versions/latest/bin"),
+        ])
+    for candidate in candidates:
+        if candidate and all((candidate / (name + suffix)).exists() for name in ("initdb", "pg_ctl", "postgres")):
             return candidate
-    initdb = shutil.which("initdb")
+    initdb = shutil.which("initdb" + suffix)
     if initdb:
         candidate = Path(initdb).resolve().parent
-        if all((candidate / name).exists() for name in ("initdb.exe", "pg_ctl.exe")):
+        if all((candidate / (name + suffix)).exists() for name in ("initdb", "pg_ctl", "postgres")):
             return candidate
-    root = Path(os.environ.get("ProgramFiles", "C:/Program Files")) / "PostgreSQL"
-    candidates = sorted(root.glob("*/bin/initdb.exe"), key=_version_key, reverse=True)
-    for candidate in candidates:
-        if (candidate.parent / "pg_ctl.exe").exists():
-            return candidate.parent
+    if os.name == "nt":
+        root = Path(os.environ.get("ProgramFiles", "C:/Program Files")) / "PostgreSQL"
+        installed = sorted(root.glob("*/bin/initdb.exe"), key=_version_key, reverse=True)
+        for candidate in installed:
+            if (candidate.parent / "pg_ctl.exe").exists():
+                return candidate.parent
     raise LocalPostgresError(
+        "PostgreSQL tools were not found. Install PostgreSQL 17 using Homebrew or Postgres.app, then reopen Statement Importer."
+        if sys.platform == "darwin" else
         "PostgreSQL tools were not found. Install PostgreSQL, or reinstall the Microsoft Store package, then reopen Statement Importer."
     )
+
+
+def _tool(bin_dir: Path, name: str) -> Path:
+    return bin_dir / (name + (".exe" if os.name == "nt" else ""))
 
 
 def _port_is_available(port: int) -> bool:
@@ -138,7 +154,7 @@ def _settings(port: str, password: str, *, user: str = APP_USER, database: str =
 
 
 def _start(bin_dir: Path, port: int) -> None:
-    pg_ctl = bin_dir / "pg_ctl.exe"
+    pg_ctl = _tool(bin_dir, "pg_ctl")
     status = subprocess.run(
         [str(pg_ctl), "status", "-D", str(DATA_DIR)],
         capture_output=True,
@@ -164,13 +180,17 @@ def _initialize(bin_dir: Path, port: int, owner_password: str) -> None:
             "A partial local PostgreSQL data folder already exists. It was preserved for safety; see the managed-postgresql log."
         )
     MANAGED_ROOT.mkdir(parents=True, exist_ok=True)
+    if os.name != "nt":
+        MANAGED_ROOT.chmod(0o700)
     DATA_DIR.mkdir(parents=True, exist_ok=True)
+    if os.name != "nt":
+        DATA_DIR.chmod(0o700)
     descriptor, password_path = tempfile.mkstemp(prefix="initdb-", suffix=".pwd", dir=MANAGED_ROOT)
     try:
         with os.fdopen(descriptor, "w", encoding="utf-8") as password_file:
             password_file.write(owner_password)
         _run([
-            str(bin_dir / "initdb.exe"), "-D", str(DATA_DIR), "--username", OWNER_USER,
+            str(_tool(bin_dir, "initdb")), "-D", str(DATA_DIR), "--username", OWNER_USER,
             "--pwfile", password_path, "--auth-host=scram-sha-256", "--auth-local=scram-sha-256",
             "--encoding=UTF8",
         ])
@@ -222,7 +242,7 @@ def provision_managed_postgres(progress=lambda message: None) -> dict[str, str]:
     metadata = _metadata()
     if metadata:
         bin_dir = Path(metadata["bin_dir"])
-        if not (bin_dir / "pg_ctl.exe").exists():
+        if not _tool(bin_dir, "pg_ctl").exists():
             bin_dir = find_postgres_bin()
         port = int(metadata["port"])
         progress("Starting your existing local database (up to 60 seconds)")
@@ -254,7 +274,7 @@ def provision_managed_postgres(progress=lambda message: None) -> dict[str, str]:
         return settings
     except Exception:
         try:
-            _run([str(bin_dir / "pg_ctl.exe"), "stop", "-D", str(DATA_DIR), "-m", "fast", "-w"], timeout=60)
+            _run([str(_tool(bin_dir, "pg_ctl")), "stop", "-D", str(DATA_DIR), "-m", "fast", "-w"], timeout=60)
         except LocalPostgresError:
             pass
         raise
@@ -265,7 +285,7 @@ def start_managed_postgres_if_present() -> bool:
     if not metadata:
         return False
     bin_dir = Path(metadata["bin_dir"])
-    if not (bin_dir / "pg_ctl.exe").exists():
+    if not _tool(bin_dir, "pg_ctl").exists():
         bin_dir = find_postgres_bin()
     _start(bin_dir, int(metadata["port"]))
     return True

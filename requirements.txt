@@ -4,3 +4,5 @@ openpyxl==3.1.5
 msoffcrypto-tool==5.4.2
 psycopg[binary]==3.3.6
 pywebview==5.4
+cryptography>=45,<51; sys_platform == "darwin"
+keyring>=25,<27; sys_platform == "darwin"
