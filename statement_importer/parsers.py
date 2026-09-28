@@ -9,10 +9,12 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 from io import BytesIO
+from types import SimpleNamespace
 from typing import Any
 
 import msoffcrypto
 import openpyxl
+import xlrd
 
 
 MONEY = Decimal("0.01")
@@ -138,29 +140,76 @@ def indusind_fingerprint(row: dict[str, Any]) -> str:
     )
 
 
-def _load_workbook(data: bytes, password: str | None):
+class _XlsSheet:
+    def __init__(self, sheet, datemode: int):
+        self._sheet = sheet
+        self._datemode = datemode
+        self.title = sheet.name
+        self.max_row = sheet.nrows
+
+    def _value(self, row: int, column: int):
+        if row < 0 or column < 0 or row >= self._sheet.nrows or column >= self._sheet.ncols:
+            return None
+        cell = self._sheet.cell(row, column)
+        if cell.ctype in (xlrd.XL_CELL_EMPTY, xlrd.XL_CELL_BLANK):
+            return None
+        if cell.ctype == xlrd.XL_CELL_DATE:
+            return xlrd.xldate_as_datetime(cell.value, self._datemode)
+        return cell.value
+
+    def cell(self, row: int, column: int):
+        return SimpleNamespace(value=self._value(row - 1, column - 1))
+
+    def iter_rows(self, min_row: int = 1, max_row: int | None = None, values_only: bool = False):
+        if not values_only:
+            raise ValueError("Legacy Excel rows must be requested as values")
+        for row in range(min_row - 1, min(max_row or self.max_row, self.max_row)):
+            yield tuple(self._value(row, column) for column in range(self._sheet.ncols))
+
+
+class _XlsWorkbook:
+    def __init__(self, book):
+        self._book = book
+        self.active = _XlsSheet(book.sheet_by_index(0), book.datemode)
+
+    def close(self):
+        self._book.release_resources()
+
+
+def _open_plain_workbook(data: bytes):
     if data.startswith(b"PK\x03\x04"):
-        plain = data
-    elif data.startswith(bytes.fromhex("D0CF11E0A1B11AE1")):
-        decrypted = BytesIO()
+        _validate_ooxml_archive(data)
+        try:
+            return openpyxl.load_workbook(BytesIO(data), read_only=True, data_only=True)
+        except Exception as error:
+            raise StatementError("The workbook could not be read as an Excel statement.") from error
+    if data.startswith(bytes.fromhex("D0CF11E0A1B11AE1")):
+        try:
+            return _XlsWorkbook(xlrd.open_workbook(file_contents=data, on_demand=True))
+        except Exception as error:
+            raise StatementError("The legacy .xls workbook could not be read.") from error
+    raise StatementError("Unsupported file format. Upload an Excel .xlsx or bank-exported .xls file.")
+
+
+def _load_workbook(data: bytes, password: str | None):
+    if data.startswith(bytes.fromhex("D0CF11E0A1B11AE1")):
         try:
             office = msoffcrypto.OfficeFile(BytesIO(data))
+            encrypted = office.is_encrypted()
+        except Exception:
+            # Older plain BIFF workbooks can use a Book stream that msoffcrypto does not recognize.
+            return _open_plain_workbook(data)
+        if encrypted:
             if not password:
                 raise PasswordRequired("This statement is password protected")
-            office.load_key(password=password)
-            office.decrypt(decrypted)
-            plain = decrypted.getvalue()
-        except PasswordRequired:
-            raise
-        except Exception as error:
-            raise StatementError("Could not decrypt the statement. Check the password.") from error
-    else:
-        raise StatementError("Unsupported file format. Upload an Excel .xlsx or bank-exported .xls file.")
-    _validate_ooxml_archive(plain)
-    try:
-        return openpyxl.load_workbook(BytesIO(plain), read_only=True, data_only=True)
-    except Exception as error:
-        raise StatementError("The workbook could not be read as an Excel statement.") from error
+            decrypted = BytesIO()
+            try:
+                office.load_key(password=password)
+                office.decrypt(decrypted)
+            except Exception as error:
+                raise StatementError("Could not decrypt the statement. Check the password.") from error
+            return _open_plain_workbook(decrypted.getvalue())
+    return _open_plain_workbook(data)
 
 
 def _validate_ooxml_archive(data: bytes) -> None:
