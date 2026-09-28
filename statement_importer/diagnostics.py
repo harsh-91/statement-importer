@@ -13,10 +13,12 @@ import sys
 import threading
 import webbrowser
 import zipfile
+import urllib.error
+import urllib.request
 from datetime import datetime, timezone
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
-from urllib.parse import quote
+from urllib.parse import urlparse
 
 from .config import CONFIG_PATH, load_settings
 from .database import test_connection
@@ -27,6 +29,16 @@ DIAGNOSTIC_DIR = LOCAL_STATE_DIR / "diagnostics"
 EVENT_LOG = DIAGNOSTIC_DIR / "setup-events.jsonl"
 REPORT_DIR = Path.home() / "Documents" / "Statement Importer Reports"
 MAX_EVENT_LOG_BYTES = 512 * 1024
+REPORT_CONFIG_URL = "https://harsh-91.github.io/neon-ledger/report-endpoint.json"
+MAX_SUBMISSION_BYTES = 16 * 1024
+
+
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, request, fp, code, msg, headers, newurl):
+        return None
+
+
+REPORT_OPENER = urllib.request.build_opener(_NoRedirect())
 _event_lock = threading.Lock()
 
 
@@ -245,11 +257,71 @@ def open_report_folder() -> None:
         webbrowser.open(REPORT_DIR.as_uri())
 
 
-def open_support_draft(bundle: Path) -> None:
-    subject = quote(f"Statement Importer database setup report - {bundle.stem}")
-    body = quote(
-        "Hello Harsh,\n\nDatabase setup did not complete. I reviewed the diagnostic bundle and will attach it to this email.\n\n"
-        f"Report file: {bundle.name}\n\nWhat I saw:\n\nSteps I tried:\n"
+def submission_diagnostics(bundle: Path) -> dict:
+    """Return the bounded, reviewable subset of a local report sent to triage."""
+    with zipfile.ZipFile(bundle) as archive:
+        if archive.getinfo("diagnostic-report.json").file_size > 64 * 1024:
+            raise ValueError("The diagnostic report is too large to submit.")
+        report = json.loads(archive.read("diagnostic-report.json"))
+    system = report.get("system", {})
+    checks = report.get("checks", [])
+    if not isinstance(system, dict) or not isinstance(checks, list):
+        raise ValueError("The diagnostic report is invalid.")
+    safe_checks = []
+    for check in checks[:20]:
+        if not isinstance(check, dict):
+            continue
+        safe_checks.append({
+            "name": sanitize_text(check.get("name", ""))[:80],
+            "status": str(check.get("status", "")) if check.get("status") in {"pass", "warn", "fail"} else "warn",
+            "detail": sanitize_text(check.get("detail", ""))[:500],
+        })
+    return {
+        "report_id": sanitize_text(report.get("report_id", ""))[:50],
+        "application_version": sanitize_text(report.get("application_version", ""))[:30],
+        "system": {key: sanitize_text(system.get(key, ""))[:80] for key in ("os", "release", "architecture")},
+        "checks": safe_checks,
+    }
+
+
+def _report_endpoint() -> str:
+    configured = os.environ.get("STATEMENT_IMPORTER_REPORT_ENDPOINT", "")
+    if not configured:
+        try:
+            with urllib.request.urlopen(REPORT_CONFIG_URL, timeout=8) as response:
+                configured = json.loads(response.read(2048)).get("url", "")
+        except (OSError, ValueError, urllib.error.URLError) as error:
+            raise ValueError("Bug reporting is temporarily unavailable. Your local report was kept.") from error
+    parsed = urlparse(configured)
+    if (parsed.scheme != "https" or not parsed.hostname or not parsed.hostname.endswith(".workers.dev")
+            or parsed.path != "/report" or parsed.query or parsed.username or parsed.password or parsed.fragment):
+        raise ValueError("Bug reporting is not configured securely.")
+    return configured
+
+
+def send_bug_report(bundle: Path, description: str) -> str:
+    description = description.strip()
+    if not 10 <= len(description) <= 2000:
+        raise ValueError("Describe what happened in 10 to 2,000 characters.")
+    payload = {"description": description, "diagnostics": submission_diagnostics(bundle)}
+    body = json.dumps(payload, ensure_ascii=True).encode("utf-8")
+    if len(body) > MAX_SUBMISSION_BYTES:
+        raise ValueError("The report is too large to submit.")
+    request = urllib.request.Request(
+        _report_endpoint(), data=body, headers={"Content-Type": "application/json", "User-Agent": "StatementImporter/" + __version__}, method="POST",
     )
-    open_report_folder()
-    webbrowser.open(f"mailto:harshnair02@hotmail.com?subject={subject}&body={body}")
+    try:
+        with REPORT_OPENER.open(request, timeout=15) as response:
+            result = json.loads(response.read(2048))
+    except urllib.error.HTTPError as error:
+        if error.code == 429:
+            raise ValueError("Too many reports were sent recently. Please try again later.") from error
+        raise ValueError("The bug report could not be sent. Your local report was kept.") from error
+    except (OSError, ValueError, urllib.error.URLError) as error:
+        raise ValueError("The bug report could not be sent. Your local report was kept.") from error
+    issue_url = result.get("issue_url", "") if isinstance(result, dict) else ""
+    parsed = urlparse(issue_url)
+    if (parsed.scheme != "https" or parsed.hostname != "github.com"
+            or not re.fullmatch(r"/harsh-91/statement-importer-bug-reports/issues/[1-9][0-9]*", parsed.path)):
+        raise ValueError("The report receiver returned an invalid issue link.")
+    return issue_url

@@ -48,16 +48,24 @@
         <div class="report-ready">
           <strong>REPORT READY</strong>
           <code>{{ bundle.name }}</code>
-          <p>Review the ZIP before sharing. “Prepare email” opens your report folder and a draft addressed to support; your email app will not attach or send it automatically.</p>
+          <p>Review the exact diagnostic fields below. Your description and these fields will be sent to a private GitHub triage repository when you press Send. The local ZIP, statements, and transactions stay on your computer.</p>
+          {% if preview %}<pre class="report-preview">{{ preview }}</pre>{% endif %}
           <div class="report-actions">
             <form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="folder"><button type="submit">OPEN REPORT FOLDER</button></form>
-            <form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="email"><button type="submit">PREPARE EMAIL TO SUPPORT</button></form>
           </div>
+          {% if preview %}<form method="post" class="report-send">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="send">
+            <label for="bug-description">WHAT HAPPENED? INCLUDE STEPS TO REPRODUCE</label>
+            <textarea id="bug-description" name="description" minlength="10" maxlength="2000" required>{{ request.form.get('description', '') }}</textarea>
+            <label><input type="checkbox" name="consent" value="yes" required> I reviewed the fields above and agree to send them and my description to private GitHub triage.</label>
+            <button type="submit">SEND BUG REPORT</button>
+          </form>{% endif %}
         </div>
         {% endif %}
       </div>
     </section>
-    <p class="note">Support email: harshnair02@hotmail.com · App version {{ app_version }}</p>
+    {% if issue_url %}<p class="note">Private triage issue #{{ issue_url.rsplit('/', 1)[-1] }} created. Save this number if you want to follow up with support. Only maintainers can open the issue.</p>{% endif %}
+    <p class="note">App version {{ app_version }}</p>
   </main>
   <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>

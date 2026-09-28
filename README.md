@@ -46,7 +46,7 @@ Open **Diagnostics** in the app, or use the troubleshooting link on the database
 
 Choose **Create privacy-safe report** to save a ZIP under `Documents\Statement Importer Reports`. It contains a system summary, check results and recent setup-stage events. It excludes statement files, transactions, database contents, passwords, API keys, encrypted configuration values and PostgreSQL log contents.
 
-Choose **Prepare email to support** to open the report folder and a draft addressed to `harshnair02@hotmail.com`. The user must review the ZIP, attach it and send the message; the app never uploads or sends diagnostics automatically. Diagnostics work offline, while sending email requires the user's configured email application and internet access.
+Review the diagnostic preview, describe the problem, confirm, then choose **Send bug report**. The app sends the description and the displayed diagnostic fields to a private GitHub triage repository through the report relay. The ZIP, setup event log, statements and transactions stay local. Report submission requires internet access; local checks and ZIP creation work offline.
 
 ## Database
 

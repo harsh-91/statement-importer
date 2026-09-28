@@ -12,7 +12,7 @@ MICROSOFT STORE: Install from the Store after the listing is approved and publis
 5. Refresh your database or DBeaver connection to see newly inserted rows.
 6. Open Backups & Access to create a verified backup and an optional read-only reporting login.
 7. Open Updates for manual GitHub release checks. After a Store installation, updates are managed by Microsoft Store.
-8. If database setup fails, open Diagnostics to run local checks and create a privacy-safe report ZIP. Review it, then use Prepare email to support.
+8. If database setup fails, open Diagnostics to run local checks and create a privacy-safe report ZIP. Review the fields, describe the issue and choose Send bug report.
 
 Supported statement structures:
 - State Bank of India (SBI)

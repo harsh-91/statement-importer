@@ -4,12 +4,14 @@ from __future__ import annotations
 import argparse
 import csv
 import io
+import json
 import secrets
 import time
 import sys
 import threading
 import subprocess
 import webbrowser
+import zipfile
 from pathlib import Path
 
 import psycopg
@@ -45,7 +47,7 @@ from statement_importer.updater import (
 from statement_importer.version import __version__
 from statement_importer.windows_package import is_msix_package
 from statement_importer.diagnostics import (
-    create_diagnostic_bundle, open_report_folder, open_support_draft,
+    create_diagnostic_bundle, open_report_folder, send_bug_report, submission_diagnostics,
     record_setup_event, REPORT_DIR, run_diagnostics, start_setup_run,
 )
 
@@ -425,6 +427,7 @@ def diagnostics():
     checks = run_diagnostics()
     error = None
     message = None
+    issue_url = None
     bundle = None
     stored_bundle = session.get("diagnostic_bundle")
     if stored_bundle:
@@ -442,18 +445,26 @@ def diagnostics():
             elif action == "folder":
                 open_report_folder()
                 message = "The diagnostic report folder is open."
-            elif action == "email":
+            elif action == "send":
                 if not bundle:
                     raise ValueError("Create a diagnostic bundle first.")
-                open_support_draft(bundle)
-                message = "Your report folder and an email draft are open. Attach the ZIP file, add what happened, review, and send."
+                if request.form.get("consent") != "yes":
+                    raise ValueError("Review the report and confirm before sending.")
+                issue_url = send_bug_report(bundle, request.form.get("description", ""))
+                message = "Bug report sent to GitHub triage."
             else:
                 abort(400, "Unknown diagnostic action")
-        except (OSError, ValueError) as exception:
+        except (OSError, ValueError, KeyError, zipfile.BadZipFile) as exception:
             error = str(exception)
+    preview = None
+    if bundle:
+        try:
+            preview = json.dumps(submission_diagnostics(bundle), indent=2)
+        except (OSError, ValueError, KeyError, zipfile.BadZipFile):
+            error = "The saved report could not be read. Create a new report."
     return render_template(
         "diagnostics.html", checks=checks, bundle=bundle,
-        message=message, error=error, app_version=__version__,
+        message=message, error=error, app_version=__version__, preview=preview, issue_url=issue_url,
     )
 
 
