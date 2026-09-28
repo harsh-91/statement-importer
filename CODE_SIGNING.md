@@ -5,7 +5,7 @@
 
 Statement Importer releases must not be represented as signed until a trusted Authenticode signature has been applied and independently verified. Check each GitHub release for its actual signing status.
 
-The [macOS beta prerelease](https://github.com/harsh-91/statement-importer/releases/tag/v1.6.2-mac-beta.1) is ad hoc signed for local execution, without Apple Developer ID signing or notarization. Its Apple Silicon and Intel ZIPs include SHA-256 checksums. It is a manual beta distribution.
+The [macOS beta prerelease](https://github.com/harsh-91/statement-importer/releases/tag/v1.6.3-mac-beta.1) is ad hoc signed for local execution, without Apple Developer ID signing or notarization. Its Apple Silicon and Intel ZIPs include SHA-256 checksums. It is a manual beta distribution.
 
 The primary release route is now Microsoft Store MSIX distribution. Microsoft signs an accepted MSIX package during Store publishing, so this repository never stores a private signing key.
 
