@@ -1,6 +1,14 @@
 <!-- Created by Harsh (@harsh-91) | Made in India | SPDX-License-Identifier: Apache-2.0 -->
 # Changelog
 
+## 1.6.3 - 2026-09-28
+
+- Replaced the diagnostic support email draft with a reviewed, opt-in report submission to a private GitHub triage repository.
+- Added a rate-limited Cloudflare receiver so users can report bugs without a GitHub account. The GitHub credential remains a Worker secret; statements, transactions, ZIPs and setup event logs are not uploaded.
+- Added Windows and macOS coverage for the same report flow.
+
+Created by Harsh · Made in India 🇮🇳
+
 ## 1.6.2 - 2026-09-28
 
 - Fixed first-run local PostgreSQL setup hanging after the server was ready by preventing the long-lived server process from inheriting captured command-output pipes.
