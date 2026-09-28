@@ -36,7 +36,7 @@ $registeredIscc = Get-ChildItem 'HKCU:\Software\Microsoft\Windows\CurrentVersion
     Select-Object -First 1
 $iscc = @($localIscc, $registeredIscc, $userIscc, $installedIscc7, $installedIscc) | Where-Object { $_ -and (Test-Path -LiteralPath $_) } | Select-Object -First 1
 if ($iscc) {
-    & $iscc (Join-Path $projectRoot 'installer\StatementImporter.iss')
+    & $iscc "/DMyAppVersion=$version" (Join-Path $projectRoot 'installer\StatementImporter.iss')
     if ($LASTEXITCODE -ne 0) { throw 'Conventional installer build failed.' }
     Write-Host "Built: $projectRoot\dist\StatementImporter-$version-Setup-x64.exe"
 } else {
