@@ -3,9 +3,9 @@
 
 **Created by [Harsh (@harsh-91)](https://github.com/harsh-91) · Made in India 🇮🇳**
 
-Offline-first Windows desktop application for reconciling bank statements into PostgreSQL. The UI uses an accessible 1980s terminal and 8-bit visual system.
+Offline-first Windows and macOS desktop application for reconciling bank statements into PostgreSQL. The UI uses an accessible 1980s terminal and 8-bit visual system.
 
-## Install
+## Windows install
 
 The recommended distribution is the Microsoft Store MSIX package. Microsoft signs approved packages and delivers atomic updates without a separate installer, elevation, or Task Manager cleanup. Until the Store listing is approved, development packages are produced by the `Build Microsoft Store MSIX` workflow but are not publicly trusted.
 
@@ -21,7 +21,13 @@ The application itself, statement processing, PostgreSQL access, REST API, and M
 
 For MSIX installations, open **Updates** to confirm that Microsoft Store management is active; Windows handles signature verification and delivery. The GitHub updater remains only for legacy installations and never downloads or installs without an explicit click.
 
-On first launch, choose **Create my local database automatically**. The app creates an isolated local PostgreSQL cluster, database, and least-privilege application login. Generated credentials are protected for the current Windows account with DPAPI. Manual server fields remain available under **Advanced**.
+On first launch, choose **Set up storage and continue**. The app creates an isolated local PostgreSQL cluster, database, and least-privilege application login. Generated credentials are protected for the current Windows account with DPAPI. Manual server fields remain available under **Advanced**.
+
+## macOS beta
+
+The [macOS beta prerelease](https://github.com/harsh-91/statement-importer/releases/tag/v1.6.2-mac-beta.1) has separate Apple Silicon and Intel app ZIPs and SHA-256 checksums. It requires macOS 15 or newer, an unlocked login Keychain, and PostgreSQL 17 tools from Homebrew or Postgres.app. See [MACOS_BETA.md](MACOS_BETA.md) for installation details.
+
+These builds are ad hoc signed, without Apple Developer ID signing or notarization. They passed Mac runner tests and bundle signature verification, but the graphical app has not yet been exercised on a physical Mac. Make a backup before relying on this beta. Mac updates are manual.
 
 ## Supported statements
 
