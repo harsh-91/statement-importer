@@ -19,7 +19,7 @@ proxy_tools==0.1.0
 psycopg==3.3.6
 psycopg-binary==3.3.6
 pycparser==3.0
-pythonnet==3.1.0
+pythonnet==3.2.0
 pywebview==5.4
 typing_extensions==4.16.0
 tzdata==2026.4
